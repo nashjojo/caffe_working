@@ -171,6 +171,7 @@ message LayerParameter {
 	// number of extra features considered by data layer
 	optional uint32 num_extfeature = 60 [default = 0];
 	optional float covar_factor = 61 [ default = 0.01 ];
+	optional uint32 concat_dim = 62 [default = 1]
 }
 
 message LayerConnection {

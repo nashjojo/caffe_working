@@ -81,6 +81,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
 		return new CCCPPoolingLayer<Dtype>(param);
 	} else if (type == "split") {
 		return new SplitLayer<Dtype>(param);
+	} else if (type == "concate") {
+		return new ConcatLayer<Dtype>(param);
 	} else {
 		LOG(FATAL) << "Unknown layer name: " << type;
 	}
