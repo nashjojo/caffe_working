@@ -1063,9 +1063,9 @@ class ConcatLayer : public Layer<Dtype> {
    *        @f$
    */
   virtual Dtype Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom);
+      const bool propagate_down, vector<Blob<Dtype>*>* bottom);
   virtual Dtype Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom);
+      const bool propagate_down, vector<Blob<Dtype>*>* bottom);
 
   Blob<Dtype> col_bob_;
   int count_;

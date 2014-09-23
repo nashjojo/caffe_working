@@ -7,7 +7,7 @@
 namespace caffe {
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void ConcatLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 			vector<Blob<Dtype>*>* top) {
 	concat_dim_ = this->layer_param_.concat_dim();
 	CHECK_GE(concat_dim_, 0) <<
@@ -76,25 +76,23 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 Dtype ConcatLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-			const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
-	const Dtype* top_diff = top[0]->cpu_diff();
-	if (concat_dim_ == 0) {
-		int offset_num = 0;
-		for (int i = 0; i < bottom->size(); ++i) {
-			Blob<Dtype>* blob = (*bottom)[i];
-			if (propagate_down[i]) {
+			const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
+	if (propagate_down) {
+		const Dtype* top_diff = top[0]->cpu_diff();
+		if (concat_dim_ == 0) {
+			int offset_num = 0;
+			for (int i = 0; i < bottom->size(); ++i) {
+				Blob<Dtype>* blob = (*bottom)[i];
 				Dtype* bottom_diff = blob->mutable_cpu_diff();
 				// caffe_copy(blob->count(), top_diff + top[0]->offset(offset_num),
 				// 					 bottom_diff);
 				memcpy(bottom_diff, top_diff + top[0]->offset(offset_num), sizeof(Dtype) * blob->count());
+				offset_num += blob->num();
 			}
-			offset_num += blob->num();
-		}
-	} else if (concat_dim_ == 1) {
-		int offset_channel = 0;
-		for (int i = 0; i < bottom->size(); ++i) {
-			Blob<Dtype>* blob = (*bottom)[i];
-			if (propagate_down[i]) {
+		} else if (concat_dim_ == 1) {
+			int offset_channel = 0;
+			for (int i = 0; i < bottom->size(); ++i) {
+				Blob<Dtype>* blob = (*bottom)[i];
 				Dtype* bottom_diff = blob->mutable_cpu_diff();
 				int num_elem = blob->channels()*blob->height()*blob->width();
 				for (int n = 0; n < num_; ++n) {
@@ -102,10 +100,10 @@ Dtype ConcatLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 					// 					 bottom_diff + blob->offset(n));
 					memcpy(bottom_diff + blob->offset(n), top_diff + top[0]->offset(n, offset_channel), sizeof(Dtype) * num_elem);
 				}
+				offset_channel += blob->channels();
 			}
-			offset_channel += blob->channels();
-		}
-	}  // concat_dim_ is guaranteed to be 0 or 1 by LayerSetUp.
+		}  // concat_dim_ is guaranteed to be 0 or 1 by LayerSetUp.
+	} // propagate_down
 }
 
 template <typename Dtype>
@@ -142,25 +140,23 @@ void ConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 Dtype ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-			const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
-	const Dtype* top_diff = top[0]->gpu_diff();
-	if (concat_dim_ == 0) {
-		int offset_num = 0;
-		for (int i = 0; i < bottom->size(); ++i) {
-			Blob<Dtype>* blob = (*bottom)[i];
-			if (propagate_down[i]) {
+			const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
+	if (propagate_down) {
+		const Dtype* top_diff = top[0]->gpu_diff();
+		if (concat_dim_ == 0) {
+			int offset_num = 0;
+			for (int i = 0; i < bottom->size(); ++i) {
+				Blob<Dtype>* blob = (*bottom)[i];
 				Dtype* bottom_diff = blob->mutable_gpu_diff();
 				// caffe_copy(blob->count(), top_diff + top[0]->offset(offset_num),
 				// 							 bottom_diff);
 				CUDA_CHECK(cudaMemcpy(bottom_diff, top_diff + top[0]->offset(offset_num), sizeof(Dtype) * blob->count(), cudaMemcpyDefault));
+				offset_num += blob->num();
 			}
-			offset_num += blob->num();
-		}
-	} else if (concat_dim_ == 1) {
-		int offset_channel = 0;
-		for (int i = 0; i < bottom->size(); ++i) {
-			Blob<Dtype>* blob = (*bottom)[i];
-			if (propagate_down[i]) {
+		} else if (concat_dim_ == 1) {
+			int offset_channel = 0;
+			for (int i = 0; i < bottom->size(); ++i) {
+				Blob<Dtype>* blob = (*bottom)[i];
 				Dtype* bottom_diff = blob->mutable_gpu_diff();
 				int num_elem = blob->channels()*blob->height()*blob->width();
 				for (int n = 0; n < num_; ++n) {
@@ -168,13 +164,13 @@ Dtype ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 					// 							 bottom_diff + blob->offset(n));
 					CUDA_CHECK(cudaMemcpy(bottom_diff + blob->offset(n), top_diff + top[0]->offset(n, offset_channel), sizeof(Dtype) * num_elem, cudaMemcpyDefault));
 				}
+				offset_channel += blob->channels();
 			}
-			offset_channel += blob->channels();
+		} else {
+			LOG(FATAL) << "concat_dim along dim" << concat_dim_ <<
+				" not implemented yet";
 		}
-	} else {
-		LOG(FATAL) << "concat_dim along dim" << concat_dim_ <<
-			" not implemented yet";
-	}
+	}  // propagate_down
 }
 
 INSTANTIATE_CLASS(ConcatLayer);
