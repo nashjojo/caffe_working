@@ -66,18 +66,6 @@ void caffe_gpu_scal(const int N, const Dtype alpha, Dtype *X);
 template <typename Dtype>
 void caffe_sqr(const int N, const Dtype* a, Dtype* y);
 
-// Kaixiang MO, 29th August, 2014
-// sqrt root element-wise
-template <typename Dtype>
-void caffe_gpu_sqr(const int N, const Dtype* a, Dtype* y);
-// inverse (x^-1) element-wise
-template <typename Dtype>
-void caffe_gpu_inverse(const int N, const Dtype* a, Dtype* y);
-// matrix transpose
-template <typename Dtype>
-void caffe_gpu_transpose(const int m, const int n, const Dtype* a, Dtype* y);
-//~ Kaixiang MO
-
 template <typename Dtype>
 void caffe_add(const int N, const Dtype* a, const Dtype* b, Dtype* y);
 

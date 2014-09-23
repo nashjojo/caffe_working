@@ -39,6 +39,8 @@ class Resolves;
 class BlobProto;
 class BlobProtoVector;
 class Datum;
+class DatumWeighted;
+class DatumPosNeg;
 class FillerParameter;
 class LayerParameter;
 class LayerConnection;
@@ -847,6 +849,348 @@ class Datum : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class DatumWeighted : public ::google::protobuf::Message {
+ public:
+  DatumWeighted();
+  virtual ~DatumWeighted();
+  
+  DatumWeighted(const DatumWeighted& from);
+  
+  inline DatumWeighted& operator=(const DatumWeighted& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DatumWeighted& default_instance();
+  
+  void Swap(DatumWeighted* other);
+  
+  // implements Message ----------------------------------------------
+  
+  DatumWeighted* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DatumWeighted& from);
+  void MergeFrom(const DatumWeighted& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // optional int32 channels = 1;
+  inline bool has_channels() const;
+  inline void clear_channels();
+  static const int kChannelsFieldNumber = 1;
+  inline ::google::protobuf::int32 channels() const;
+  inline void set_channels(::google::protobuf::int32 value);
+  
+  // optional int32 height = 2;
+  inline bool has_height() const;
+  inline void clear_height();
+  static const int kHeightFieldNumber = 2;
+  inline ::google::protobuf::int32 height() const;
+  inline void set_height(::google::protobuf::int32 value);
+  
+  // optional int32 width = 3;
+  inline bool has_width() const;
+  inline void clear_width();
+  static const int kWidthFieldNumber = 3;
+  inline ::google::protobuf::int32 width() const;
+  inline void set_width(::google::protobuf::int32 value);
+  
+  // optional bytes data = 4;
+  inline bool has_data() const;
+  inline void clear_data();
+  static const int kDataFieldNumber = 4;
+  inline const ::std::string& data() const;
+  inline void set_data(const ::std::string& value);
+  inline void set_data(const char* value);
+  inline void set_data(const void* value, size_t size);
+  inline ::std::string* mutable_data();
+  
+  // optional int32 label = 5;
+  inline bool has_label() const;
+  inline void clear_label();
+  static const int kLabelFieldNumber = 5;
+  inline ::google::protobuf::int32 label() const;
+  inline void set_label(::google::protobuf::int32 value);
+  
+  // repeated float float_data = 6;
+  inline int float_data_size() const;
+  inline void clear_float_data();
+  static const int kFloatDataFieldNumber = 6;
+  inline float float_data(int index) const;
+  inline void set_float_data(int index, float value);
+  inline void add_float_data(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      float_data() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_float_data();
+  
+  // optional float weight = 7 [default = 1];
+  inline bool has_weight() const;
+  inline void clear_weight();
+  static const int kWeightFieldNumber = 7;
+  inline float weight() const;
+  inline void set_weight(float value);
+  
+  // optional int32 id = 8;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 8;
+  inline ::google::protobuf::int32 id() const;
+  inline void set_id(::google::protobuf::int32 value);
+  
+  // repeated float extfeature = 9;
+  inline int extfeature_size() const;
+  inline void clear_extfeature();
+  static const int kExtfeatureFieldNumber = 9;
+  inline float extfeature(int index) const;
+  inline void set_extfeature(int index, float value);
+  inline void add_extfeature(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      extfeature() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_extfeature();
+  
+  // @@protoc_insertion_point(class_scope:caffe.DatumWeighted)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::google::protobuf::int32 channels_;
+  ::google::protobuf::int32 height_;
+  ::google::protobuf::int32 width_;
+  ::std::string* data_;
+  static const ::std::string _default_data_;
+  ::google::protobuf::int32 label_;
+  ::google::protobuf::RepeatedField< float > float_data_;
+  float weight_;
+  ::google::protobuf::int32 id_;
+  ::google::protobuf::RepeatedField< float > extfeature_;
+  friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
+  friend void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto();
+  friend void protobuf_ShutdownFile_caffe_2fproto_2fcaffe_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static DatumWeighted* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DatumPosNeg : public ::google::protobuf::Message {
+ public:
+  DatumPosNeg();
+  virtual ~DatumPosNeg();
+  
+  DatumPosNeg(const DatumPosNeg& from);
+  
+  inline DatumPosNeg& operator=(const DatumPosNeg& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DatumPosNeg& default_instance();
+  
+  void Swap(DatumPosNeg* other);
+  
+  // implements Message ----------------------------------------------
+  
+  DatumPosNeg* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DatumPosNeg& from);
+  void MergeFrom(const DatumPosNeg& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // optional int32 channels = 1;
+  inline bool has_channels() const;
+  inline void clear_channels();
+  static const int kChannelsFieldNumber = 1;
+  inline ::google::protobuf::int32 channels() const;
+  inline void set_channels(::google::protobuf::int32 value);
+  
+  // optional int32 height = 2;
+  inline bool has_height() const;
+  inline void clear_height();
+  static const int kHeightFieldNumber = 2;
+  inline ::google::protobuf::int32 height() const;
+  inline void set_height(::google::protobuf::int32 value);
+  
+  // optional int32 width = 3;
+  inline bool has_width() const;
+  inline void clear_width();
+  static const int kWidthFieldNumber = 3;
+  inline ::google::protobuf::int32 width() const;
+  inline void set_width(::google::protobuf::int32 value);
+  
+  // optional bytes data = 4;
+  inline bool has_data() const;
+  inline void clear_data();
+  static const int kDataFieldNumber = 4;
+  inline const ::std::string& data() const;
+  inline void set_data(const ::std::string& value);
+  inline void set_data(const char* value);
+  inline void set_data(const void* value, size_t size);
+  inline ::std::string* mutable_data();
+  
+  // optional int32 label = 5;
+  inline bool has_label() const;
+  inline void clear_label();
+  static const int kLabelFieldNumber = 5;
+  inline ::google::protobuf::int32 label() const;
+  inline void set_label(::google::protobuf::int32 value);
+  
+  // repeated float float_data = 6;
+  inline int float_data_size() const;
+  inline void clear_float_data();
+  static const int kFloatDataFieldNumber = 6;
+  inline float float_data(int index) const;
+  inline void set_float_data(int index, float value);
+  inline void add_float_data(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      float_data() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_float_data();
+  
+  // optional float weight = 7 [default = 1];
+  inline bool has_weight() const;
+  inline void clear_weight();
+  static const int kWeightFieldNumber = 7;
+  inline float weight() const;
+  inline void set_weight(float value);
+  
+  // optional int32 id = 8;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 8;
+  inline ::google::protobuf::int32 id() const;
+  inline void set_id(::google::protobuf::int32 value);
+  
+  // repeated float extfeature = 9;
+  inline int extfeature_size() const;
+  inline void clear_extfeature();
+  static const int kExtfeatureFieldNumber = 9;
+  inline float extfeature(int index) const;
+  inline void set_extfeature(int index, float value);
+  inline void add_extfeature(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      extfeature() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_extfeature();
+  
+  // optional float neg_weight = 10 [default = 1];
+  inline bool has_neg_weight() const;
+  inline void clear_neg_weight();
+  static const int kNegWeightFieldNumber = 10;
+  inline float neg_weight() const;
+  inline void set_neg_weight(float value);
+  
+  // @@protoc_insertion_point(class_scope:caffe.DatumPosNeg)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::google::protobuf::int32 channels_;
+  ::google::protobuf::int32 height_;
+  ::google::protobuf::int32 width_;
+  ::std::string* data_;
+  static const ::std::string _default_data_;
+  ::google::protobuf::int32 label_;
+  ::google::protobuf::RepeatedField< float > float_data_;
+  float weight_;
+  ::google::protobuf::int32 id_;
+  ::google::protobuf::RepeatedField< float > extfeature_;
+  float neg_weight_;
+  friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
+  friend void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto();
+  friend void protobuf_ShutdownFile_caffe_2fproto_2fcaffe_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static DatumPosNeg* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class FillerParameter : public ::google::protobuf::Message {
  public:
   FillerParameter();
@@ -1357,6 +1701,27 @@ class LayerParameter : public ::google::protobuf::Message {
   inline void set_resolve_size(const char* value, size_t size);
   inline ::std::string* mutable_resolve_size();
   
+  // optional uint32 num_extfeature = 60 [default = 0];
+  inline bool has_num_extfeature() const;
+  inline void clear_num_extfeature();
+  static const int kNumExtfeatureFieldNumber = 60;
+  inline ::google::protobuf::uint32 num_extfeature() const;
+  inline void set_num_extfeature(::google::protobuf::uint32 value);
+  
+  // optional float covar_factor = 61 [default = 0.01];
+  inline bool has_covar_factor() const;
+  inline void clear_covar_factor();
+  static const int kCovarFactorFieldNumber = 61;
+  inline float covar_factor() const;
+  inline void set_covar_factor(float value);
+  
+  // optional uint32 concat_dim = 62 [default = 1];
+  inline bool has_concat_dim() const;
+  inline void clear_concat_dim();
+  static const int kConcatDimFieldNumber = 62;
+  inline ::google::protobuf::uint32 concat_dim() const;
+  inline void set_concat_dim(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:caffe.LayerParameter)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -1407,11 +1772,14 @@ class LayerParameter : public ::google::protobuf::Message {
   static const ::std::string _default_label_dump_;
   ::std::string* resolve_size_;
   static const ::std::string _default_resolve_size_;
+  ::google::protobuf::uint32 num_extfeature_;
+  float covar_factor_;
+  ::google::protobuf::uint32 concat_dim_;
   friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
   friend void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto();
   friend void protobuf_ShutdownFile_caffe_2fproto_2fcaffe_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(35 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(38 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -2598,6 +2966,406 @@ Datum::mutable_float_data() {
 
 // -------------------------------------------------------------------
 
+// DatumWeighted
+
+// optional int32 channels = 1;
+inline bool DatumWeighted::has_channels() const {
+  return _has_bit(0);
+}
+inline void DatumWeighted::clear_channels() {
+  channels_ = 0;
+  _clear_bit(0);
+}
+inline ::google::protobuf::int32 DatumWeighted::channels() const {
+  return channels_;
+}
+inline void DatumWeighted::set_channels(::google::protobuf::int32 value) {
+  _set_bit(0);
+  channels_ = value;
+}
+
+// optional int32 height = 2;
+inline bool DatumWeighted::has_height() const {
+  return _has_bit(1);
+}
+inline void DatumWeighted::clear_height() {
+  height_ = 0;
+  _clear_bit(1);
+}
+inline ::google::protobuf::int32 DatumWeighted::height() const {
+  return height_;
+}
+inline void DatumWeighted::set_height(::google::protobuf::int32 value) {
+  _set_bit(1);
+  height_ = value;
+}
+
+// optional int32 width = 3;
+inline bool DatumWeighted::has_width() const {
+  return _has_bit(2);
+}
+inline void DatumWeighted::clear_width() {
+  width_ = 0;
+  _clear_bit(2);
+}
+inline ::google::protobuf::int32 DatumWeighted::width() const {
+  return width_;
+}
+inline void DatumWeighted::set_width(::google::protobuf::int32 value) {
+  _set_bit(2);
+  width_ = value;
+}
+
+// optional bytes data = 4;
+inline bool DatumWeighted::has_data() const {
+  return _has_bit(3);
+}
+inline void DatumWeighted::clear_data() {
+  if (data_ != &_default_data_) {
+    data_->clear();
+  }
+  _clear_bit(3);
+}
+inline const ::std::string& DatumWeighted::data() const {
+  return *data_;
+}
+inline void DatumWeighted::set_data(const ::std::string& value) {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  data_->assign(value);
+}
+inline void DatumWeighted::set_data(const char* value) {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  data_->assign(value);
+}
+inline void DatumWeighted::set_data(const void* value, size_t size) {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  data_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DatumWeighted::mutable_data() {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  return data_;
+}
+
+// optional int32 label = 5;
+inline bool DatumWeighted::has_label() const {
+  return _has_bit(4);
+}
+inline void DatumWeighted::clear_label() {
+  label_ = 0;
+  _clear_bit(4);
+}
+inline ::google::protobuf::int32 DatumWeighted::label() const {
+  return label_;
+}
+inline void DatumWeighted::set_label(::google::protobuf::int32 value) {
+  _set_bit(4);
+  label_ = value;
+}
+
+// repeated float float_data = 6;
+inline int DatumWeighted::float_data_size() const {
+  return float_data_.size();
+}
+inline void DatumWeighted::clear_float_data() {
+  float_data_.Clear();
+}
+inline float DatumWeighted::float_data(int index) const {
+  return float_data_.Get(index);
+}
+inline void DatumWeighted::set_float_data(int index, float value) {
+  float_data_.Set(index, value);
+}
+inline void DatumWeighted::add_float_data(float value) {
+  float_data_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DatumWeighted::float_data() const {
+  return float_data_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DatumWeighted::mutable_float_data() {
+  return &float_data_;
+}
+
+// optional float weight = 7 [default = 1];
+inline bool DatumWeighted::has_weight() const {
+  return _has_bit(6);
+}
+inline void DatumWeighted::clear_weight() {
+  weight_ = 1;
+  _clear_bit(6);
+}
+inline float DatumWeighted::weight() const {
+  return weight_;
+}
+inline void DatumWeighted::set_weight(float value) {
+  _set_bit(6);
+  weight_ = value;
+}
+
+// optional int32 id = 8;
+inline bool DatumWeighted::has_id() const {
+  return _has_bit(7);
+}
+inline void DatumWeighted::clear_id() {
+  id_ = 0;
+  _clear_bit(7);
+}
+inline ::google::protobuf::int32 DatumWeighted::id() const {
+  return id_;
+}
+inline void DatumWeighted::set_id(::google::protobuf::int32 value) {
+  _set_bit(7);
+  id_ = value;
+}
+
+// repeated float extfeature = 9;
+inline int DatumWeighted::extfeature_size() const {
+  return extfeature_.size();
+}
+inline void DatumWeighted::clear_extfeature() {
+  extfeature_.Clear();
+}
+inline float DatumWeighted::extfeature(int index) const {
+  return extfeature_.Get(index);
+}
+inline void DatumWeighted::set_extfeature(int index, float value) {
+  extfeature_.Set(index, value);
+}
+inline void DatumWeighted::add_extfeature(float value) {
+  extfeature_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DatumWeighted::extfeature() const {
+  return extfeature_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DatumWeighted::mutable_extfeature() {
+  return &extfeature_;
+}
+
+// -------------------------------------------------------------------
+
+// DatumPosNeg
+
+// optional int32 channels = 1;
+inline bool DatumPosNeg::has_channels() const {
+  return _has_bit(0);
+}
+inline void DatumPosNeg::clear_channels() {
+  channels_ = 0;
+  _clear_bit(0);
+}
+inline ::google::protobuf::int32 DatumPosNeg::channels() const {
+  return channels_;
+}
+inline void DatumPosNeg::set_channels(::google::protobuf::int32 value) {
+  _set_bit(0);
+  channels_ = value;
+}
+
+// optional int32 height = 2;
+inline bool DatumPosNeg::has_height() const {
+  return _has_bit(1);
+}
+inline void DatumPosNeg::clear_height() {
+  height_ = 0;
+  _clear_bit(1);
+}
+inline ::google::protobuf::int32 DatumPosNeg::height() const {
+  return height_;
+}
+inline void DatumPosNeg::set_height(::google::protobuf::int32 value) {
+  _set_bit(1);
+  height_ = value;
+}
+
+// optional int32 width = 3;
+inline bool DatumPosNeg::has_width() const {
+  return _has_bit(2);
+}
+inline void DatumPosNeg::clear_width() {
+  width_ = 0;
+  _clear_bit(2);
+}
+inline ::google::protobuf::int32 DatumPosNeg::width() const {
+  return width_;
+}
+inline void DatumPosNeg::set_width(::google::protobuf::int32 value) {
+  _set_bit(2);
+  width_ = value;
+}
+
+// optional bytes data = 4;
+inline bool DatumPosNeg::has_data() const {
+  return _has_bit(3);
+}
+inline void DatumPosNeg::clear_data() {
+  if (data_ != &_default_data_) {
+    data_->clear();
+  }
+  _clear_bit(3);
+}
+inline const ::std::string& DatumPosNeg::data() const {
+  return *data_;
+}
+inline void DatumPosNeg::set_data(const ::std::string& value) {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  data_->assign(value);
+}
+inline void DatumPosNeg::set_data(const char* value) {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  data_->assign(value);
+}
+inline void DatumPosNeg::set_data(const void* value, size_t size) {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  data_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DatumPosNeg::mutable_data() {
+  _set_bit(3);
+  if (data_ == &_default_data_) {
+    data_ = new ::std::string;
+  }
+  return data_;
+}
+
+// optional int32 label = 5;
+inline bool DatumPosNeg::has_label() const {
+  return _has_bit(4);
+}
+inline void DatumPosNeg::clear_label() {
+  label_ = 0;
+  _clear_bit(4);
+}
+inline ::google::protobuf::int32 DatumPosNeg::label() const {
+  return label_;
+}
+inline void DatumPosNeg::set_label(::google::protobuf::int32 value) {
+  _set_bit(4);
+  label_ = value;
+}
+
+// repeated float float_data = 6;
+inline int DatumPosNeg::float_data_size() const {
+  return float_data_.size();
+}
+inline void DatumPosNeg::clear_float_data() {
+  float_data_.Clear();
+}
+inline float DatumPosNeg::float_data(int index) const {
+  return float_data_.Get(index);
+}
+inline void DatumPosNeg::set_float_data(int index, float value) {
+  float_data_.Set(index, value);
+}
+inline void DatumPosNeg::add_float_data(float value) {
+  float_data_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DatumPosNeg::float_data() const {
+  return float_data_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DatumPosNeg::mutable_float_data() {
+  return &float_data_;
+}
+
+// optional float weight = 7 [default = 1];
+inline bool DatumPosNeg::has_weight() const {
+  return _has_bit(6);
+}
+inline void DatumPosNeg::clear_weight() {
+  weight_ = 1;
+  _clear_bit(6);
+}
+inline float DatumPosNeg::weight() const {
+  return weight_;
+}
+inline void DatumPosNeg::set_weight(float value) {
+  _set_bit(6);
+  weight_ = value;
+}
+
+// optional int32 id = 8;
+inline bool DatumPosNeg::has_id() const {
+  return _has_bit(7);
+}
+inline void DatumPosNeg::clear_id() {
+  id_ = 0;
+  _clear_bit(7);
+}
+inline ::google::protobuf::int32 DatumPosNeg::id() const {
+  return id_;
+}
+inline void DatumPosNeg::set_id(::google::protobuf::int32 value) {
+  _set_bit(7);
+  id_ = value;
+}
+
+// repeated float extfeature = 9;
+inline int DatumPosNeg::extfeature_size() const {
+  return extfeature_.size();
+}
+inline void DatumPosNeg::clear_extfeature() {
+  extfeature_.Clear();
+}
+inline float DatumPosNeg::extfeature(int index) const {
+  return extfeature_.Get(index);
+}
+inline void DatumPosNeg::set_extfeature(int index, float value) {
+  extfeature_.Set(index, value);
+}
+inline void DatumPosNeg::add_extfeature(float value) {
+  extfeature_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DatumPosNeg::extfeature() const {
+  return extfeature_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DatumPosNeg::mutable_extfeature() {
+  return &extfeature_;
+}
+
+// optional float neg_weight = 10 [default = 1];
+inline bool DatumPosNeg::has_neg_weight() const {
+  return _has_bit(9);
+}
+inline void DatumPosNeg::clear_neg_weight() {
+  neg_weight_ = 1;
+  _clear_bit(9);
+}
+inline float DatumPosNeg::neg_weight() const {
+  return neg_weight_;
+}
+inline void DatumPosNeg::set_neg_weight(float value) {
+  _set_bit(9);
+  neg_weight_ = value;
+}
+
+// -------------------------------------------------------------------
+
 // FillerParameter
 
 // optional string type = 1 [default = "constant"];
@@ -3590,6 +4358,54 @@ inline ::std::string* LayerParameter::mutable_resolve_size() {
     resolve_size_ = new ::std::string;
   }
   return resolve_size_;
+}
+
+// optional uint32 num_extfeature = 60 [default = 0];
+inline bool LayerParameter::has_num_extfeature() const {
+  return _has_bit(35);
+}
+inline void LayerParameter::clear_num_extfeature() {
+  num_extfeature_ = 0u;
+  _clear_bit(35);
+}
+inline ::google::protobuf::uint32 LayerParameter::num_extfeature() const {
+  return num_extfeature_;
+}
+inline void LayerParameter::set_num_extfeature(::google::protobuf::uint32 value) {
+  _set_bit(35);
+  num_extfeature_ = value;
+}
+
+// optional float covar_factor = 61 [default = 0.01];
+inline bool LayerParameter::has_covar_factor() const {
+  return _has_bit(36);
+}
+inline void LayerParameter::clear_covar_factor() {
+  covar_factor_ = 0.01f;
+  _clear_bit(36);
+}
+inline float LayerParameter::covar_factor() const {
+  return covar_factor_;
+}
+inline void LayerParameter::set_covar_factor(float value) {
+  _set_bit(36);
+  covar_factor_ = value;
+}
+
+// optional uint32 concat_dim = 62 [default = 1];
+inline bool LayerParameter::has_concat_dim() const {
+  return _has_bit(37);
+}
+inline void LayerParameter::clear_concat_dim() {
+  concat_dim_ = 1u;
+  _clear_bit(37);
+}
+inline ::google::protobuf::uint32 LayerParameter::concat_dim() const {
+  return concat_dim_;
+}
+inline void LayerParameter::set_concat_dim(::google::protobuf::uint32 value) {
+  _set_bit(37);
+  concat_dim_ = value;
 }
 
 // -------------------------------------------------------------------

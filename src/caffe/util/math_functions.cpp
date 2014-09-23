@@ -203,22 +203,6 @@ void caffe_sqr<double>(const int n, const double* a, double* y) {
   vdSqr(n, a, y);
 }
 
-// Kaixiang Mo
-template <>
-void caffe_gpu_transpose<float>(const int m, const int n, const float* a, float* y) {
-	// Note that cublas follows fortran order.
-  // cublasOperation_t cuTransA =
-  //     (TransA == CblasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
-  // cublasOperation_t cuTransB =
-  //     (TransB == CblasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
-  CUBLAS_CHECK(cublasSgeam(Caffe::cublas_handle(), CUBLAS_OP_T, CUBLAS_OP_T, m, n, 1., a, n, 0. a, n, y, m ));
-}
-template <>
-void caffe_gpu_transpose<double>(const int m, const int n, const double* a, double* y) {
-  CUBLAS_CHECK(cublasDgeam(Caffe::cublas_handle(), CUBLAS_OP_T, CUBLAS_OP_T, m, n, 1., a, n, 0. a, n, y, m ));
-}
-// ~Kaixiang Mo
-
 template <>
 void caffe_add<float>(const int n, const float* a, const float* b,
     float* y) { vsAdd(n, a, b, y); }
