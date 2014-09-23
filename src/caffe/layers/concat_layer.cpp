@@ -75,7 +75,7 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+Dtype ConcatLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 			const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
 	const Dtype* top_diff = top[0]->cpu_diff();
 	if (concat_dim_ == 0) {
@@ -141,7 +141,7 @@ void ConcatLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+Dtype ConcatLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 			const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
 	const Dtype* top_diff = top[0]->gpu_diff();
 	if (concat_dim_ == 0) {
