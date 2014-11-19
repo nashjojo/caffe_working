@@ -104,7 +104,7 @@ bool ReadImageToDatum(const string& filename, const int label,
 }
 // Kaixiang MO, 23th April, 2014
 // Reading for DatumWeighted
-bool ReadImageToDatumWeighted(const string& filename, const int label, const float weight, const int id, 
+bool ReadImageToDatumWeighted(const string& filename, const int label, const float weight, const long int id, 
 		const int height, const int width, DatumWeighted* datum) {
 	cv::Mat cv_img;
 	if (height > 0 && width > 0) {
@@ -139,7 +139,7 @@ bool ReadImageToDatumWeighted(const string& filename, const int label, const flo
 	return true;
 }
 // Resize the smaller edge to a fix point, then insert to leveldb.
-bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const int id, 
+bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const long int id, 
 		const int short_edge, DatumWeighted* datum) {
 	cv::Mat cv_img;
 	cv::Mat cv_img_origin;
@@ -192,7 +192,7 @@ bool ReadResizedImageToDatumWeighted(const string& filename, const int label, co
 }
 
 // Resize the smaller edge to a fix point, then insert to leveldb. With extra features as well
-bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const int id, 
+bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const long int id, 
 		const int short_edge, DatumWeighted* datum, const std::vector<float>& feature) {
 	cv::Mat cv_img;
 	cv::Mat cv_img_origin;
@@ -255,7 +255,7 @@ bool ReadResizedImageToDatumWeighted(const string& filename, const int label, co
 // Kaixiang Mo, 28th June, 2014
 // have postive and negative weight, dummy label
 // Resize the smaller edge to a fix point, then insert to leveldb. With extra features as well
-bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const int id,
+bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const long int id,
 		const int short_edge, DatumPosNeg* datum, const std::vector<float>& feature) {
 	cv::Mat cv_img;
 	cv::Mat cv_img_origin;

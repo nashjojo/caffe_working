@@ -114,6 +114,18 @@ void caffe_gpu_axpy<int>(const int N, const int alpha, const int* X,
   NOT_IMPLEMENTED;
 }
 // ~Kaixiang Mo, 25th April, 2014
+
+// Kaixiang Mo, 19th Nov, 2014
+template <>
+void caffe_axpy<long int>(const int N, const long int alpha, const long int* X,
+    long int* Y) { NOT_IMPLEMENTED; }
+
+template <>
+void caffe_gpu_axpy<long int>(const int N, const long int alpha, const long int* X,
+    long int* Y) {
+  NOT_IMPLEMENTED;
+}
+// ~Kaixiang Mo, 19th Nov, 2014
 	
 template <>
 void caffe_gpu_axpy<float>(const int N, const float alpha, const float* X,

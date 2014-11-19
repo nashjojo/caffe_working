@@ -504,11 +504,11 @@ void protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto() {
     "nnels\030\001 \001(\005\022\016\n\006height\030\002 \001(\005\022\r\n\005width\030\003 \001"
     "(\005\022\014\n\004data\030\004 \001(\014\022\r\n\005label\030\005 \001(\005\022\022\n\nfloat"
     "_data\030\006 \003(\002\022\021\n\006weight\030\007 \001(\002:\0011\022\n\n\002id\030\010 \001"
-    "(\005\022\022\n\nextfeature\030\t \003(\002\"\271\001\n\013DatumPosNeg\022\020"
+    "(\003\022\022\n\nextfeature\030\t \003(\002\"\271\001\n\013DatumPosNeg\022\020"
     "\n\010channels\030\001 \001(\005\022\016\n\006height\030\002 \001(\005\022\r\n\005widt"
     "h\030\003 \001(\005\022\014\n\004data\030\004 \001(\014\022\r\n\005label\030\005 \001(\005\022\022\n\n"
     "float_data\030\006 \003(\002\022\021\n\006weight\030\007 \001(\002:\0011\022\n\n\002i"
-    "d\030\010 \001(\005\022\022\n\nextfeature\030\t \003(\002\022\025\n\nneg_weigh"
+    "d\030\010 \001(\003\022\022\n\nextfeature\030\t \003(\002\022\025\n\nneg_weigh"
     "t\030\n \001(\002:\0011\"\216\001\n\017FillerParameter\022\026\n\004type\030\001"
     " \001(\t:\010constant\022\020\n\005value\030\002 \001(\002:\0010\022\016\n\003min\030"
     "\003 \001(\002:\0010\022\016\n\003max\030\004 \001(\002:\0011\022\017\n\004mean\030\005 \001(\002:\001"
@@ -2727,7 +2727,7 @@ void DatumWeighted::SharedCtor() {
   data_ = const_cast< ::std::string*>(&_default_data_);
   label_ = 0;
   weight_ = 1;
-  id_ = 0;
+  id_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2775,7 +2775,7 @@ void DatumWeighted::Clear() {
     }
     label_ = 0;
     weight_ = 1;
-    id_ = 0;
+    id_ = GOOGLE_LONGLONG(0);
   }
   float_data_.Clear();
   extfeature_.Clear();
@@ -2904,13 +2904,13 @@ bool DatumWeighted::MergePartialFromCodedStream(
         break;
       }
       
-      // optional int32 id = 8;
+      // optional int64 id = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_id:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &id_)));
           _set_bit(7);
         } else {
@@ -2997,9 +2997,9 @@ void DatumWeighted::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->weight(), output);
   }
   
-  // optional int32 id = 8;
+  // optional int64 id = 8;
   if (_has_bit(7)) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->id(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(8, this->id(), output);
   }
   
   // repeated float extfeature = 9;
@@ -3054,9 +3054,9 @@ void DatumWeighted::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->weight(), target);
   }
   
-  // optional int32 id = 8;
+  // optional int64 id = 8;
   if (_has_bit(7)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->id(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(8, this->id(), target);
   }
   
   // repeated float extfeature = 9;
@@ -3116,10 +3116,10 @@ int DatumWeighted::ByteSize() const {
       total_size += 1 + 4;
     }
     
-    // optional int32 id = 8;
+    // optional int64 id = 8;
     if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->id());
     }
     
@@ -3272,7 +3272,7 @@ void DatumPosNeg::SharedCtor() {
   data_ = const_cast< ::std::string*>(&_default_data_);
   label_ = 0;
   weight_ = 1;
-  id_ = 0;
+  id_ = GOOGLE_LONGLONG(0);
   neg_weight_ = 1;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -3321,7 +3321,7 @@ void DatumPosNeg::Clear() {
     }
     label_ = 0;
     weight_ = 1;
-    id_ = 0;
+    id_ = GOOGLE_LONGLONG(0);
   }
   if (_has_bits_[9 / 32] & (0xffu << (9 % 32))) {
     neg_weight_ = 1;
@@ -3453,13 +3453,13 @@ bool DatumPosNeg::MergePartialFromCodedStream(
         break;
       }
       
-      // optional int32 id = 8;
+      // optional int64 id = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_id:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &id_)));
           _set_bit(7);
         } else {
@@ -3562,9 +3562,9 @@ void DatumPosNeg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->weight(), output);
   }
   
-  // optional int32 id = 8;
+  // optional int64 id = 8;
   if (_has_bit(7)) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->id(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(8, this->id(), output);
   }
   
   // repeated float extfeature = 9;
@@ -3624,9 +3624,9 @@ void DatumPosNeg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->weight(), target);
   }
   
-  // optional int32 id = 8;
+  // optional int64 id = 8;
   if (_has_bit(7)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->id(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(8, this->id(), target);
   }
   
   // repeated float extfeature = 9;
@@ -3691,10 +3691,10 @@ int DatumPosNeg::ByteSize() const {
       total_size += 1 + 4;
     }
     
-    // optional int32 id = 8;
+    // optional int64 id = 8;
     if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->id());
     }
     

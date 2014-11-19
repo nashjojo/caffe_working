@@ -49,12 +49,12 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 	std::ifstream infile(argv[2]);
-	std::vector< std::vector<int> > lines; // store each line
+	std::vector< std::vector<long int> > lines; // store each line
 	std::vector< std::vector<float> > features; // store features of each line
 	//string filename;
-	int adid;
-	int weight;
-	int neg_weight;
+	long int adid;
+	long int weight;
+	long int neg_weight;
 	string line;
 	float feature;
 	int feature_id;
@@ -65,8 +65,8 @@ int main(int argc, char** argv) {
 		lineString >> adid >> weight >> neg_weight;
 		// std::cout << "reading from file" << std::endl;
 		// std::cout << adid <<" "<< weight <<" "<< neg_weight <<" "<< std::endl;
-		int temp[] = {adid,weight,neg_weight};
-		std::vector<int> temp_vector(temp, temp + sizeof(temp)/sizeof(int));
+		long int temp[] = {adid,weight,neg_weight};
+		std::vector<long int> temp_vector(temp, temp + sizeof(temp)/sizeof(long int));
 		lines.push_back(temp_vector);
 		
 		// read in extra features
@@ -118,8 +118,8 @@ int main(int argc, char** argv) {
 	leveldb::WriteBatch* batch = new leveldb::WriteBatch();
 	for (int line_id = 0; line_id < lines.size(); ++line_id) {
 		//LOG(INFO) << "line_id" << line_id;
-		// LOG(INFO) << lines[line_id][0] <<" "<< lines[line_id][1] <<" "<< lines[line_id][2];
-		sprintf( filename, "%s%d.jpg", root_folder.c_str(), lines[line_id][0]);
+		//LOG(INFO) << lines[line_id][0] <<" "<< lines[line_id][1] <<" "<< lines[line_id][2];
+		sprintf( filename, "%s%ld.jpg", root_folder.c_str(), lines[line_id][0]);
 		// LOG(INFO) << filename <<" "<< lines[line_id][1] <<" "<< lines[line_id][2];
 
 //bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const int id, const int short_edge, DatumPosNeg* datum, const std::vector<float>& feature);
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 		};
 		// sequential
 		//key = ""+lines[line_id][0]+"_"+lines[line_id][1];
-		sprintf(key, "%d", lines[line_id][0]);
+		sprintf(key, "%ld", lines[line_id][0]);
 		//LOG(INFO) << key <<" ";
 		string value; 
 

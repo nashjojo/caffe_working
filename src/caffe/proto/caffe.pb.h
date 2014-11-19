@@ -960,12 +960,12 @@ class DatumWeighted : public ::google::protobuf::Message {
   inline float weight() const;
   inline void set_weight(float value);
   
-  // optional int32 id = 8;
+  // optional int64 id = 8;
   inline bool has_id() const;
   inline void clear_id();
   static const int kIdFieldNumber = 8;
-  inline ::google::protobuf::int32 id() const;
-  inline void set_id(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 id() const;
+  inline void set_id(::google::protobuf::int64 value);
   
   // repeated float extfeature = 9;
   inline int extfeature_size() const;
@@ -992,7 +992,7 @@ class DatumWeighted : public ::google::protobuf::Message {
   ::google::protobuf::int32 label_;
   ::google::protobuf::RepeatedField< float > float_data_;
   float weight_;
-  ::google::protobuf::int32 id_;
+  ::google::protobuf::int64 id_;
   ::google::protobuf::RepeatedField< float > extfeature_;
   friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
   friend void protobuf_AssignDesc_caffe_2fproto_2fcaffe_2eproto();
@@ -1127,12 +1127,12 @@ class DatumPosNeg : public ::google::protobuf::Message {
   inline float weight() const;
   inline void set_weight(float value);
   
-  // optional int32 id = 8;
+  // optional int64 id = 8;
   inline bool has_id() const;
   inline void clear_id();
   static const int kIdFieldNumber = 8;
-  inline ::google::protobuf::int32 id() const;
-  inline void set_id(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 id() const;
+  inline void set_id(::google::protobuf::int64 value);
   
   // repeated float extfeature = 9;
   inline int extfeature_size() const;
@@ -1166,7 +1166,7 @@ class DatumPosNeg : public ::google::protobuf::Message {
   ::google::protobuf::int32 label_;
   ::google::protobuf::RepeatedField< float > float_data_;
   float weight_;
-  ::google::protobuf::int32 id_;
+  ::google::protobuf::int64 id_;
   ::google::protobuf::RepeatedField< float > extfeature_;
   float neg_weight_;
   friend void  protobuf_AddDesc_caffe_2fproto_2fcaffe_2eproto();
@@ -3115,18 +3115,18 @@ inline void DatumWeighted::set_weight(float value) {
   weight_ = value;
 }
 
-// optional int32 id = 8;
+// optional int64 id = 8;
 inline bool DatumWeighted::has_id() const {
   return _has_bit(7);
 }
 inline void DatumWeighted::clear_id() {
-  id_ = 0;
+  id_ = GOOGLE_LONGLONG(0);
   _clear_bit(7);
 }
-inline ::google::protobuf::int32 DatumWeighted::id() const {
+inline ::google::protobuf::int64 DatumWeighted::id() const {
   return id_;
 }
-inline void DatumWeighted::set_id(::google::protobuf::int32 value) {
+inline void DatumWeighted::set_id(::google::protobuf::int64 value) {
   _set_bit(7);
   id_ = value;
 }
@@ -3307,18 +3307,18 @@ inline void DatumPosNeg::set_weight(float value) {
   weight_ = value;
 }
 
-// optional int32 id = 8;
+// optional int64 id = 8;
 inline bool DatumPosNeg::has_id() const {
   return _has_bit(7);
 }
 inline void DatumPosNeg::clear_id() {
-  id_ = 0;
+  id_ = GOOGLE_LONGLONG(0);
   _clear_bit(7);
 }
-inline ::google::protobuf::int32 DatumPosNeg::id() const {
+inline ::google::protobuf::int64 DatumPosNeg::id() const {
   return id_;
 }
-inline void DatumPosNeg::set_id(::google::protobuf::int32 value) {
+inline void DatumPosNeg::set_id(::google::protobuf::int64 value) {
   _set_bit(7);
   id_ = value;
 }

@@ -286,7 +286,7 @@ void DumpLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	const Dtype* bottom_data = bottom[0]->cpu_data();
 	const Dtype* bottom_label = bottom[1]->cpu_data();
 	const Dtype* bottom_weight = bottom[2]->cpu_data();
-	const int* bottom_id = reinterpret_cast<const int*>((bottom)[3]->cpu_data());
+	const long int* bottom_id = reinterpret_cast<const long int*>((bottom)[3]->cpu_data());
 	int num = bottom[0]->num();
 	int dim = bottom[0]->count() / bottom[0]->num();
 	
@@ -319,8 +319,8 @@ void DumpLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 			}
 		}
 	// label, weight, adid
-		out << (int)bottom_label[i] <<" "<< (int)bottom_weight[i] <<" "<< (int)bottom_id[i] << endl;
-	//std::cout << (int)bottom_label[i] <<" "<< (int)bottom_weight[i] <<" "<< (int)bottom_id[i] << std::endl;
+		out << (int)bottom_label[i] <<" "<< (int)bottom_weight[i] <<" "<< (long int)bottom_id[i] << endl;
+	//std::cout << (int)bottom_label[i] <<" "<< (int)bottom_weight[i] <<" "<< (long int)bottom_id[i] << std::endl;
 		if ( max_id == (int)bottom_label[i] ) {
 			++accuracy;
 		}
@@ -365,7 +365,7 @@ void DumpLayerPosNeg<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	const Dtype* bottom_label = bottom[1]->cpu_data();
 	const Dtype* bottom_weight = bottom[2]->cpu_data();
 	const Dtype* bottom_neg_weight = bottom[4]->cpu_data();
-	const int* bottom_id = reinterpret_cast<const int*>((bottom)[3]->cpu_data());
+	const long int* bottom_id = reinterpret_cast<const long int*>((bottom)[3]->cpu_data());
 	int num = bottom[0]->num();
 	int dim = bottom[0]->count() / bottom[0]->num();
 	CHECK_EQ(dim, 2) << "DumpLayerPosNeg require exactly 2 output classes";
@@ -404,9 +404,9 @@ void DumpLayerPosNeg<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 			}
 		}
 		// label, weight, adid
-		out << out_prob[0] << " " << out_prob[1] << " " << 1 <<" "<< (int)bottom_weight[i] <<" "<< (int)bottom_id[i] << endl;
-		out << out_prob[0] << " " << out_prob[1] << " " << 0 <<" "<< (int)bottom_neg_weight[i] <<" "<< (int)bottom_id[i] << endl;
-		//std::cout << (int)bottom_label[i] <<" "<< (int)bottom_weight[i] <<" "<< (int)bottom_id[i] << std::endl;
+		out << out_prob[0] << " " << out_prob[1] << " " << 1 <<" "<< (int)bottom_weight[i] <<" "<< (long int)bottom_id[i] << endl;
+		out << out_prob[0] << " " << out_prob[1] << " " << 0 <<" "<< (int)bottom_neg_weight[i] <<" "<< (long int)bottom_id[i] << endl;
+		//std::cout << (int)bottom_label[i] <<" "<< (int)bottom_weight[i] <<" "<< (long int)bottom_id[i] << std::endl;
 		if ( max_id == (int)bottom_label[i] ) {
 			++accuracy;
 		}

@@ -61,7 +61,7 @@ message DatumWeighted {
 	repeated float float_data = 6;
 	// weight for this instance
 	optional float weight = 7 [default = 1];
-	optional int32 id = 8;
+	optional int64 id = 8;
 	// external features
 	repeated float extfeature = 9;
 }
@@ -82,7 +82,7 @@ message DatumPosNeg {
 	// weight for this instance
 	optional float weight = 7 [default = 1]; // #clicks
 	
-	optional int32 id = 8;
+	optional int64 id = 8;
 	// external features
 	repeated float extfeature = 9;
 

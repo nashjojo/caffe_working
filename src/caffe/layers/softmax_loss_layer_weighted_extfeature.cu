@@ -54,7 +54,7 @@ Dtype SoftmaxWithLossLayerWeightedExtFeature<Dtype>::Backward_cpu(const vector<B
 	memcpy(bottom_diff, prob_data, sizeof(Dtype) * prob_.count());
 	const Dtype* label = (*bottom)[1]->cpu_data();
 	const Dtype* weight = (*bottom)[2]->cpu_data();
-	//const int* id = reinterpret_cast<int*>((*bottom)[3]->cpu_data()); // Kaixiang MO, 25th April, 2014
+	//const long int* id = reinterpret_cast<long int*>((*bottom)[3]->cpu_data()); // Kaixiang MO, 25th April, 2014
 	const Dtype* extfeature = (*bottom)[4]->cpu_data();
 	
 	//const int num_extfeature = this->layer_param_.num_extfeature();

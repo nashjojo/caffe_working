@@ -50,24 +50,24 @@ inline bool ReadImageToDatum(const string& filename, const int label,
 }
 
 // Kaixiang MO, 23th April, 2014
-bool ReadImageToDatumWeighted(const string& filename, const int label, const float weight, const int id,
+bool ReadImageToDatumWeighted(const string& filename, const int label, const float weight, const long int id,
 		const int height, const int width, DatumWeighted* datum);
 
-inline bool ReadImageToDatumWeighted(const string& filename, const int label, const float weight, const int id,
+inline bool ReadImageToDatumWeighted(const string& filename, const int label, const float weight, const long int id,
 		DatumWeighted* datum) {
 	return ReadImageToDatumWeighted(filename, label, weight, id, 0, 0, datum);
 }
 
-bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const int id,
+bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const int long id,
 		const int short_edge, DatumWeighted* datum);
 	
 // with extra feature
-bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const int id,
+bool ReadResizedImageToDatumWeighted(const string& filename, const int label, const float weight, const long int id,
 		const int short_edge, DatumWeighted* datum, const std::vector<float>& feature);
 // ~Kaixiang MO, 23th April, 2014
 
 // pos and neg weight in one instance, with extra feature
-bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const int id,
+bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const long int id,
 		const int short_edge, DatumPosNeg* datum, const std::vector<float>& feature);
 // ~Kaixiang MO, 28th June, 2014
 

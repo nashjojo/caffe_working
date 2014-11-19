@@ -520,7 +520,7 @@ class DataLayerWeighted : public Layer<Dtype> {
 	// instance weight
 	shared_ptr<Blob<Dtype> > prefetch_weight_;
 	// instance id, Dtype or use int32? precision enough?? 
-	shared_ptr<Blob<int> > prefetch_id_;
+	shared_ptr<Blob<long int> > prefetch_id_;
 	// instance existing feature
 	shared_ptr<Blob<Dtype> > prefetch_extfeature_;
 	Blob<Dtype> data_mean_;
@@ -574,7 +574,7 @@ class DataLayerPosNeg : public Layer<Dtype> {
 	// instance negative weight, #impression
 	shared_ptr<Blob<Dtype> > prefetch_neg_weight_;
 	// instance id, Dtype or use int32? precision enough?? 
-	shared_ptr<Blob<int> > prefetch_id_;
+	shared_ptr<Blob<long int> > prefetch_id_;
 	// instance existing feature
 	shared_ptr<Blob<Dtype> > prefetch_extfeature_;
 	Blob<Dtype> data_mean_;

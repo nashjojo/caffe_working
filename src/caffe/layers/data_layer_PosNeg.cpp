@@ -39,7 +39,7 @@ void* DataLayerPosNegPrefetchForTest(void* layer_pointer) {
 	Dtype* top_weight = layer->prefetch_weight_->mutable_cpu_data();
 	Dtype* top_neg_weight = layer->prefetch_neg_weight_->mutable_cpu_data();
 	Dtype* top_extfeature = layer->prefetch_extfeature_->mutable_cpu_data();
-	int* top_id = layer->prefetch_id_->mutable_cpu_data();
+	long int* top_id = layer->prefetch_id_->mutable_cpu_data();
 	const Dtype scale = layer->layer_param_.scale();
 	int batchsize = layer->layer_param_.batchsize();
 	const int cropsize = layer->layer_param_.cropsize();
@@ -209,7 +209,7 @@ void* DataLayerPosNegPrefetch(void* layer_pointer) {
 	Dtype* top_weight = layer->prefetch_weight_->mutable_cpu_data();
 	Dtype* top_neg_weight = layer->prefetch_neg_weight_->mutable_cpu_data();
 	Dtype* top_extfeature = layer->prefetch_extfeature_->mutable_cpu_data();
-	int* top_id = layer->prefetch_id_->mutable_cpu_data();
+	long int* top_id = layer->prefetch_id_->mutable_cpu_data();
 	const Dtype scale = layer->layer_param_.scale();
 	const int batchsize = layer->layer_param_.batchsize();
 	const int cropsize = layer->layer_param_.cropsize();
@@ -436,7 +436,7 @@ void DataLayerPosNeg<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 	// id
 	(*top)[3]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
 	prefetch_id_.reset(
-			new Blob<int>(this->layer_param_.batchsize()*delta, 1, 1, 1));
+			new Blob<long int>(this->layer_param_.batchsize()*delta, 1, 1, 1));
 
 	const int num_extfeature = this->layer_param_.num_extfeature();
 	CHECK(num_extfeature > 0) << "Number of extra feature should be larger than 0.";
@@ -511,7 +511,7 @@ void DataLayerPosNeg<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	memcpy((*top)[5]->mutable_cpu_data(), prefetch_neg_weight_->cpu_data(),
 			sizeof(Dtype) * prefetch_neg_weight_->count());
 	memcpy((*top)[3]->mutable_cpu_data(), prefetch_id_->cpu_data(),
-			sizeof(int) * prefetch_id_->count());
+			sizeof(long int) * prefetch_id_->count());
 	memcpy((*top)[4]->mutable_cpu_data(), prefetch_extfeature_->cpu_data(),
 			sizeof(Dtype) * prefetch_extfeature_->count());
 	LOG(INFO)<<"data layer forward finished.";
@@ -542,7 +542,7 @@ void DataLayerPosNeg<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 			prefetch_neg_weight_->cpu_data(), sizeof(Dtype) * prefetch_neg_weight_->count(),
 			cudaMemcpyHostToDevice));
 	CUDA_CHECK(cudaMemcpy((*top)[3]->mutable_gpu_data(),
-			prefetch_id_->cpu_data(), sizeof(int) * prefetch_id_->count(),
+			prefetch_id_->cpu_data(), sizeof(long int) * prefetch_id_->count(),
 			cudaMemcpyHostToDevice));
 	CUDA_CHECK(cudaMemcpy((*top)[4]->mutable_gpu_data(),
 			prefetch_extfeature_->cpu_data(), sizeof(Dtype) * prefetch_extfeature_->count(),

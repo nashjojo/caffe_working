@@ -205,6 +205,7 @@ void Blob<Dtype>::Clear(bool clear_diff){
 
 INSTANTIATE_CLASS(Blob); // only instantiate class float and double!!!
 template class Blob<int>; // Kaixiang MO, 25th April, 2014
+template class Blob<long int>; 
 
 }  // namespace caffe
 
