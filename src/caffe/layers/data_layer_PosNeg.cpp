@@ -173,7 +173,7 @@ void* DataLayerPosNegPrefetchForTest(void* layer_pointer) {
 	for (int i = 0; i < num_extfeature; i++) {
 		// If we consider only category information, we set num_extfeature to 5
 		// We hard code in this code that there are total 10 num_extfeatures
-		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(9-i));
+		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(i));
 		// std::cout << datum.extfeature(i) <<"\t";
 	}
 	// std::cout << std::endl;
@@ -332,11 +332,12 @@ void* DataLayerPosNegPrefetch(void* layer_pointer) {
 	top_weight[itemid] = datum.weight();
 	top_neg_weight[itemid] = datum.neg_weight();
 	top_id[itemid] = datum.id();
+	//std::cout << itemid << "\t" << sizeof(int) << "\t" << sizeof(long int) << "\t" << top_id[itemid] << std::endl;
 	// have to use a for loop to assign
 	for (int i = 0; i < num_extfeature; i++) {
 		// If we consider only category information, we set num_extfeature to 5
 		// We hard code in this code that there are total 10 num_extfeatures
-		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(9-i));
+		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(i));
 	}
 	// check the weight here
 	//std::cout << "item " << itemid << " weight " << datum.weight() <<" id " << datum.id() << std::endl;
@@ -432,7 +433,6 @@ void DataLayerPosNeg<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 	(*top)[5]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
 	prefetch_neg_weight_.reset(
 			new Blob<Dtype>(this->layer_param_.batchsize()*delta, 1, 1, 1));
-
 	// id
 	(*top)[3]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
 	prefetch_id_.reset(
@@ -510,6 +510,10 @@ void DataLayerPosNeg<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 			sizeof(Dtype) * prefetch_weight_->count());
 	memcpy((*top)[5]->mutable_cpu_data(), prefetch_neg_weight_->cpu_data(),
 			sizeof(Dtype) * prefetch_neg_weight_->count());
+
+	// ERROR! here we are only copying a part of the data
+	// The prefetch_id_ is actually long int, not int.
+	// But using long int will cause error?! why??
 	memcpy((*top)[3]->mutable_cpu_data(), prefetch_id_->cpu_data(),
 			sizeof(long int) * prefetch_id_->count());
 	memcpy((*top)[4]->mutable_cpu_data(), prefetch_extfeature_->cpu_data(),
@@ -541,6 +545,10 @@ void DataLayerPosNeg<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 	CUDA_CHECK(cudaMemcpy((*top)[5]->mutable_gpu_data(),
 			prefetch_neg_weight_->cpu_data(), sizeof(Dtype) * prefetch_neg_weight_->count(),
 			cudaMemcpyHostToDevice));
+
+	// ERROR! here we are only copying a part of the data
+	// The prefetch_id_ is actually long int, not int.
+	// But using long int will cause error!? why?
 	CUDA_CHECK(cudaMemcpy((*top)[3]->mutable_gpu_data(),
 			prefetch_id_->cpu_data(), sizeof(long int) * prefetch_id_->count(),
 			cudaMemcpyHostToDevice));
