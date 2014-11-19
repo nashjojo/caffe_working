@@ -173,7 +173,7 @@ void* DataLayerPosNegPrefetchForTest(void* layer_pointer) {
 	for (int i = 0; i < num_extfeature; i++) {
 		// If we consider only category information, we set num_extfeature to 5
 		// We hard code in this code that there are total 10 num_extfeatures
-		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(9-i));
+		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(i));
 		// std::cout << datum.extfeature(i) <<"\t";
 	}
 	// std::cout << std::endl;
@@ -336,7 +336,7 @@ void* DataLayerPosNegPrefetch(void* layer_pointer) {
 	for (int i = 0; i < num_extfeature; i++) {
 		// If we consider only category information, we set num_extfeature to 5
 		// We hard code in this code that there are total 10 num_extfeatures
-		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(9-i));
+		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(i));
 	}
 	// check the weight here
 	//std::cout << "item " << itemid << " weight " << datum.weight() <<" id " << datum.id() << std::endl;
