@@ -1,0 +1,44 @@
+# CUDA directory contains bin/ and lib/ directories that we need.
+CUDA_DIR := /home/nash/Documents/caffe/lib/cuda-5.5
+
+# CUDA architecture setting.
+CUDA_ARCH := -gencode arch=compute_20,code=sm_20 \
+    -gencode arch=compute_20,code=sm_21 \
+    -gencode arch=compute_30,code=sm_30 \
+    -gencode arch=compute_35,code=sm_35
+
+# MKL directory contains include/ and lib/ directions that we need.
+MKL_DIR := /home/nash/Documents/caffe/lib/intel/composer_xe_2013_sp1.1.106/mkl
+
+# NOTE: this is required only if you will compile the matlab interface.
+# MATLAB directory should contain the mex binary in /bin
+MATLAB_DIR := /usr/local
+
+# NOTE: this is required only if you will compile the python interface.
+# We need to be able to find Python.h and numpy/arrayobject.h.
+PYTHON_INCLUDES := /usr/include/python2.7 \
+    /usr/local/lib/python2.7/dist-packages/numpy/core/include
+# We need to be able to find libpythonX.X.so or .dylib.
+PYTHON_LIB := /usr/local/lib
+
+# Whatever else you find you need goes here.
+INCLUDE_DIRS := $(PYTHON_INCLUDES) /home/nash/Documents/caffe/lib/leveldb/leveldb-1.7.0/include \
+        /home/nash/Documents/caffe/lib/protobuf/include /usr/include \
+	/home/nash/Documents/caffe/lib/glog/include/ \
+        /usr/local/include #\
+        /home/nash/Documents/caffe/lib/opencv-install/include
+
+LIBRARY_DIRS := $(PYTHON_LIB)  /home/nash/Documents/caffe/lib/leveldb/leveldb-1.7.0 \
+        /home/nash/Documents/caffe/lib/protobuf/lib /usr/lib \
+	/home/nash/Documents/caffe/lib/snappy/lib \
+        /home/nash/Documents/caffe/lib/glog/lib/ \
+        /usr/local/lib #\
+	/home/nash/Documents/caffe/lib/opencv-install/lib
+
+# For OS X, use clang++.
+CXX := /usr/bin/g++-4.4
+# For OS X 10.9, use libstdc++ instead of libc++ for CUDA compatibility.
+#CXXFLAGS := -stdlib=libstdc++
+
+BUILD_DIR := build
+DISTRIBUTE_DIR := distribute

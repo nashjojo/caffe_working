@@ -34,7 +34,7 @@ using std::vector;
 using std::string;
 
 const int IMG_SIZE=128;
-const int WRITE_BATCH_SIZE = 10000;
+const int WRITE_BATCH_SIZE = 20000;
 
 int main(int argc, char** argv) {
 	::google::InitGoogleLogging(argv[0]);

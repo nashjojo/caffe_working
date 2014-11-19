@@ -2,7 +2,7 @@
 PROJECT := caffe
 TEST_GPUID := 0
 
-include Makefile.config.server
+include Makefile.config.laptop
 
 ##############################################################################
 # After this line, things should happen automatically.
