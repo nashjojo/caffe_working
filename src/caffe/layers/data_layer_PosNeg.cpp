@@ -328,7 +328,7 @@ void* DataLayerPosNegPrefetch(void* layer_pointer) {
 			}
 		}
 	// copy other fields here
-		top_label[itemid] = datum.label();
+	top_label[itemid] = datum.label();
 	top_weight[itemid] = datum.weight();
 	top_neg_weight[itemid] = datum.neg_weight();
 	top_id[itemid] = datum.id();
@@ -592,9 +592,9 @@ Dtype DataLayerPosNeg<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 					value_in = top_diff[img_offset + channel_offset + h*cropsize + w ] / covar_factor;
 					value_out	= static_cast<uint8_t>( value_in*1.0 / scale + mean[channel_offset + h*cropsize + w] );
 					cv_img.at<cv::Vec3b>(h,w)[c] = value_out;
-					//if(value_in > 0) {
-						//LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
-					//}
+					// if(value_in > 0) {
+					// 	LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
+					// }
 				}
 			}
 		}

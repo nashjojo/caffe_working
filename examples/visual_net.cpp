@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
   }
   
   Caffe::SetDevice(atoi(argv[4]));
-  //Caffe::set_phase(Caffe::TEST);
-  Caffe::set_phase(Caffe::TRAIN);
+  Caffe::set_phase(Caffe::TEST);
+  // Caffe::set_phase(Caffe::TRAIN);
 
   if (argc == 6 && strcmp(argv[5], "GPU") == 0) {
     LOG(ERROR) << "Using GPU";
