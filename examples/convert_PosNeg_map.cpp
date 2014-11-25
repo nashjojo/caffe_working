@@ -33,7 +33,8 @@ using namespace caffe;
 using std::vector;
 using std::string;
 
-const int IMG_SIZE=128;
+const int MIN_IMG_SIZE=128;
+const int MAX_IMG_SIZE=150;
 const int WRITE_BATCH_SIZE = 20000;
 
 int main(int argc, char** argv) {
@@ -126,9 +127,9 @@ int main(int argc, char** argv) {
 		// LOG(INFO) << filename <<" "<< lines[line_id][1] << " " << lines[line_id][2] <<" "<< lines[line_id][3];
 
 //bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const int id, const int short_edge, DatumPosNeg* datum, const std::vector<float>& feature);
-		if (!ReadResizedImageToDatumPosNeg(string(filename), 
+		if (!ReadResizedLargeImageToDatumPosNeg(string(filename), 
 			float(lines[line_id][1]), float(lines[line_id][2]), lines[line_id][0], 
-			IMG_SIZE, &datum, features[line_id])) {
+			MIN_IMG_SIZE, MAX_IMG_SIZE, &datum, features[line_id])) {
 			continue;
 		};
 		// sequential

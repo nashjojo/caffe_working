@@ -272,18 +272,19 @@ bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, c
 	// what if both edge is shorter?
 	// find the shorted edge
 	if (height<width && height<short_edge) {
-	float ratio = (1.0*short_edge)/height;
-	height = short_edge;
-	width = int(ratio*width);
+		float ratio = (1.0*short_edge)/height;
+		height = short_edge;
+		width = int(ratio*width);
 		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
 	} else if (width<height && width<short_edge) {
-	float ratio = (1.0*short_edge)/width;
-	width = short_edge;
-	height = int(ratio*height);
-	cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		float ratio = (1.0*short_edge)/width;
+		width = short_edge;
+		height = int(ratio*height);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
 	} else {
-	cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
 	}
+
 	if (!cv_img.data) {
 		LOG(ERROR) << "Could not open or find file " << filename;
 		return false;
@@ -314,5 +315,85 @@ bool ReadResizedImageToDatumPosNeg(const string& filename, const float weight, c
 	}
 	return true;
 } // ~ Kaixiang MO, 28th June, 2014
+
+// Kaixiang Mo, 24th Nov, 2014
+// Also resize long edge to a fixed length.
+// have postive and negative weight, dummy label
+// Resize the smaller edge to a fix point, then insert to leveldb. With extra features as well
+bool ReadResizedLargeImageToDatumPosNeg(const string& filename, const float weight, const float neg_weight, const int id,
+		const int short_edge, const int long_edge, DatumPosNeg* datum, const std::vector<float>& feature) {
+	cv::Mat cv_img;
+	cv::Mat cv_img_origin;
+	int height;
+	int width;
+	cv_img_origin = cv::imread(filename, CV_LOAD_IMAGE_COLOR);
+	//CHECK_EQ(cv_img_origin.channels(), 3) << "Image need to have exactly 3 channels.";
+	if (cv_img_origin.channels() != 3) {
+		LOG(ERROR) << "Image need to have exactly 3 channels.\t" << filename;
+		return false;
+	}
+	height = cv_img_origin.size().height;
+	width = cv_img_origin.size().width;
+	// what if both edge is shorter?
+	// find the shorted edge
+	if (height<=width && height<short_edge) {
+		float ratio = (1.0*short_edge)/height;
+		height = short_edge;
+		width = int(ratio*width);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "height<width && height<short_edge";
+	} else if (width<height && width<short_edge) {
+		float ratio = (1.0*short_edge)/width;
+		width = short_edge;
+		height = int(ratio*height);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "width<height && width<short_edge";
+	} else if (height<=width && height>long_edge) {
+		float ratio = (1.0*long_edge)/height;
+		height = long_edge;
+		width = int(ratio*width);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "height<width && height>long_edge";
+	} else if (width<height && width>long_edge) {
+		float ratio = (1.0*long_edge)/width;
+		width = long_edge;
+		height = int(ratio*height);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "width<height && width>long_edge";
+	} else { // put original image into leveldb
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+	}
+	
+	//LOG(INFO) << cv_img_origin.size().height<<"*"<<cv_img_origin.size().width <<" resizing to " << height << "*" << width;
+	if (!cv_img.data) {
+		LOG(ERROR) << "Could not open or find file " << filename;
+		return false;
+	}
+	datum->set_channels(3);
+	datum->set_height(cv_img.rows);
+	datum->set_width(cv_img.cols);
+	datum->set_label(0);
+	datum->set_weight(weight);
+	datum->set_neg_weight(neg_weight);
+	datum->set_id(id);
+	
+	// setting extra features
+	datum->clear_extfeature();
+	for (int i = 0; i < feature.size(); i++) {
+		datum->add_extfeature(feature[i]);
+	}
+	
+	datum->clear_data();
+	datum->clear_float_data();
+	string* datum_string = datum->mutable_data();
+	for (int c = 0; c < 3; ++c) {
+		for (int h = 0; h < cv_img.rows; ++h) {
+			for (int w = 0; w < cv_img.cols; ++w) {
+				datum_string->push_back(static_cast<char>(cv_img.at<cv::Vec3b>(h, w)[c]));
+			}
+		}
+	}
+	return true;
+} // ~ Kaixiang MO, 24th Nov, 2014
 
 }  // namespace caffe

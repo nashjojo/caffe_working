@@ -105,7 +105,7 @@ template <typename Dtype>
 Dtype DropoutLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     const bool propagate_down,
     vector<Blob<Dtype>*>* bottom) {
-  CHECK(Caffe::phase() == Caffe::TRAIN);
+  CHECK(Caffe::phase() == Caffe::TRAIN); // Kaixiang Mo at 24 Nov, 2014
   if (propagate_down) {
     const Dtype* top_diff = top[0]->gpu_diff();
     Dtype* bottom_diff = (*bottom)[0]->mutable_gpu_diff();

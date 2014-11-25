@@ -682,6 +682,34 @@ class SoftmaxWithLossLayer : public Layer<Dtype> {
 	vector<Blob<Dtype>*> softmax_top_vec_;
 };
 
+// SoftmaxWithLossLayer is a layer that implements softmax and return fixed loss,
+// Used for visualization
+template <typename Dtype>
+class SoftmaxWithFixedLossLayer : public Layer<Dtype> {
+ public:
+	explicit SoftmaxWithFixedLossLayer(const LayerParameter& param)
+			: Layer<Dtype>(param), softmax_layer_(new SoftmaxLayer<Dtype>(param)) {}
+	virtual void SetUp(const vector<Blob<Dtype>*>& bottom,
+			vector<Blob<Dtype>*>* top);
+
+ protected:
+	virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+			vector<Blob<Dtype>*>* top);
+	virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+			vector<Blob<Dtype>*>* top);
+	virtual Dtype Backward_cpu(const vector<Blob<Dtype>*>& top,
+			const bool propagate_down, vector<Blob<Dtype>*>* bottom);
+	virtual Dtype Backward_gpu(const vector<Blob<Dtype>*>& top,
+		 const bool propagate_down, vector<Blob<Dtype>*>* bottom);
+
+	shared_ptr<SoftmaxLayer<Dtype> > softmax_layer_;
+	// prob stores the output probability of the layer.
+	Blob<Dtype> prob_;
+	// Vector holders to call the underlying softmax layer forward and backward.
+	vector<Blob<Dtype>*> softmax_bottom_vec_;
+	vector<Blob<Dtype>*> softmax_top_vec_;
+};
+
 // Kaixiang Mo, 22th April, 2014
 // softmax + multinomiallogisticloss layer, with instance weight
 template <typename Dtype>

@@ -67,6 +67,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
 		return new SoftmaxLayer<Dtype>(param);
 	} else if (type == "softmax_loss") {
 		return new SoftmaxWithLossLayer<Dtype>(param);
+	} else if (type == "softmax_fixed_loss") {
+		return new SoftmaxWithFixedLossLayer<Dtype>(param);
 	} else if (type == "softmax_loss_weighted") {
 		return new SoftmaxWithLossLayerWeighted<Dtype>(param);
 	} else if (type == "softmax_loss_posneg") {

@@ -554,17 +554,86 @@ void DataLayerPosNeg<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		CHECK(!pthread_create(&thread_, NULL, DataLayerPosNegPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 }
 
-// The backward operations are dummy - they do not carry any computation.
+
+// Save propogate down gradient w.r.t top data.
+// The backward operations were dummy - they do not carry any computation.
 template <typename Dtype>
 Dtype DataLayerPosNeg<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 			const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
+	const Dtype* top_diff = top[0]->cpu_diff();
+	const Dtype* top_data = top[0]->cpu_data();
+	const int* id = reinterpret_cast<const int*>(top[3]->cpu_data());
+
+	const Dtype scale = this->layer_param_.scale();
+	const int cropsize = this->layer_param_.cropsize();
+	//int mean = this->layer_param_.meanvalue();
+	const Dtype* mean = this->data_mean_.cpu_data();
+	Dtype covar_factor = this->layer_param_.covar_factor();
+	int channels = this->datum_channels_;
+	string dump_path = this->layer_param_.data_dump();
+	int num = top[0]->num();
+	int dim = top[0]->count() / num;
+	
+	char filename[256];
+	int img_offset = 0;
+	int channel_offset = 0;
+	Dtype value_in = 0;
+	uint8_t value_out = 0;
+
+	for (int itemid = 0; itemid < num; ++itemid ) {
+		// data_diff -> image
+		cv::Mat cv_img = cv::Mat::zeros(cropsize,cropsize, CV_8UC3);
+		for (int c = 0; c < channels; ++c) {
+			for (int h = 0; h < cropsize; ++h) {
+				for (int w = 0; w < cropsize; ++w) {
+					img_offset = itemid*channels*cropsize*cropsize;
+					channel_offset = c*cropsize*cropsize;
+
+					value_in = top_diff[img_offset + channel_offset + h*cropsize + w ] / covar_factor;
+					value_out	= static_cast<uint8_t>( value_in*1.0 / scale + mean[channel_offset + h*cropsize + w] );
+					cv_img.at<cv::Vec3b>(h,w)[c] = value_out;
+					//if(value_in > 0) {
+						//LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
+					//}
+				}
+			}
+		}
+		// save image files
+		sprintf( filename, "%s/saliency/%d.png", dump_path.c_str(), id[itemid] );
+		cv::imwrite( filename, cv_img );
+
+		// data_diff -> image
+		cv::Mat original_img = cv::Mat::zeros(cropsize,cropsize, CV_8UC3);
+		for (int c = 0; c < channels; ++c) {
+			for (int h = 0; h < cropsize; ++h) {
+				for (int w = 0; w < cropsize; ++w) {
+					img_offset = itemid*channels*cropsize*cropsize;
+					channel_offset = c*cropsize*cropsize;
+
+					value_in = top_data[img_offset + channel_offset + h*cropsize + w ];
+					value_out	= static_cast<uint8_t>( value_in*1.0 / scale + mean[channel_offset + h*cropsize + w] );
+					original_img.at<cv::Vec3b>(h,w)[c] = value_out;
+					//if(value_in > 0) {
+						//LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
+					//}
+				}
+			}
+		}
+		// save image files
+		sprintf( filename, "%s/original/%d.png", dump_path.c_str(), id[itemid] );
+		cv::imwrite( filename, original_img );
+
+	}
+
 	return Dtype(0.);
 }
 
 template <typename Dtype>
 Dtype DataLayerPosNeg<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 			const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
-	return Dtype(0.);
+	// using cpu version
+	return Backward_cpu(top, propagate_down, bottom);
+	//return Dtype(0.);
 }
 
 INSTANTIATE_CLASS(DataLayerPosNeg);
