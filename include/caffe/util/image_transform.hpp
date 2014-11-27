@@ -16,6 +16,8 @@ namespace caffe{
 	void rotateImage(const Mat& src, Mat& dst, float angle);
 	void flipImage(const Mat& src, Mat& dst);
 	void blurImageBilateral(const Mat& src, Mat& dst, float w, float sigma1, float sigma2);
+
+	void getPositioinOffset(string pos, int oriH, int oriW, int h, int w, int& h_off, int& w_off);
 } // namespace caffe
 
 #endif

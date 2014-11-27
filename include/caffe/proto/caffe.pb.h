@@ -124,7 +124,7 @@ class TransformParameter : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // optional string side = 1;
+  // optional string side = 1 [default = "middle"];
   inline bool has_side() const;
   inline void clear_side();
   static const int kSideFieldNumber = 1;
@@ -134,7 +134,7 @@ class TransformParameter : public ::google::protobuf::Message {
   inline void set_side(const char* value, size_t size);
   inline ::std::string* mutable_side();
   
-  // optional string pos = 2;
+  // optional string pos = 2 [default = "middle"];
   inline bool has_pos() const;
   inline void clear_pos();
   static const int kPosFieldNumber = 2;
@@ -144,14 +144,14 @@ class TransformParameter : public ::google::protobuf::Message {
   inline void set_pos(const char* value, size_t size);
   inline ::std::string* mutable_pos();
   
-  // optional int32 size = 3;
+  // optional int32 size = 3 [default = 0];
   inline bool has_size() const;
   inline void clear_size();
   static const int kSizeFieldNumber = 3;
   inline ::google::protobuf::int32 size() const;
   inline void set_size(::google::protobuf::int32 value);
   
-  // optional bool mirror = 4;
+  // optional bool mirror = 4 [default = false];
   inline bool has_mirror() const;
   inline void clear_mirror();
   static const int kMirrorFieldNumber = 4;
@@ -245,7 +245,7 @@ class Transforms : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // optional int32 side_len = 1;
+  // optional int32 side_len = 1 [default = 0];
   inline bool has_side_len() const;
   inline void clear_side_len();
   static const int kSideLenFieldNumber = 1;
@@ -2472,13 +2472,13 @@ class SolverState : public ::google::protobuf::Message {
 
 // TransformParameter
 
-// optional string side = 1;
+// optional string side = 1 [default = "middle"];
 inline bool TransformParameter::has_side() const {
   return _has_bit(0);
 }
 inline void TransformParameter::clear_side() {
   if (side_ != &_default_side_) {
-    side_->clear();
+    side_->assign(_default_side_);
   }
   _clear_bit(0);
 }
@@ -2509,18 +2509,18 @@ inline void TransformParameter::set_side(const char* value, size_t size) {
 inline ::std::string* TransformParameter::mutable_side() {
   _set_bit(0);
   if (side_ == &_default_side_) {
-    side_ = new ::std::string;
+    side_ = new ::std::string(_default_side_);
   }
   return side_;
 }
 
-// optional string pos = 2;
+// optional string pos = 2 [default = "middle"];
 inline bool TransformParameter::has_pos() const {
   return _has_bit(1);
 }
 inline void TransformParameter::clear_pos() {
   if (pos_ != &_default_pos_) {
-    pos_->clear();
+    pos_->assign(_default_pos_);
   }
   _clear_bit(1);
 }
@@ -2551,12 +2551,12 @@ inline void TransformParameter::set_pos(const char* value, size_t size) {
 inline ::std::string* TransformParameter::mutable_pos() {
   _set_bit(1);
   if (pos_ == &_default_pos_) {
-    pos_ = new ::std::string;
+    pos_ = new ::std::string(_default_pos_);
   }
   return pos_;
 }
 
-// optional int32 size = 3;
+// optional int32 size = 3 [default = 0];
 inline bool TransformParameter::has_size() const {
   return _has_bit(2);
 }
@@ -2572,7 +2572,7 @@ inline void TransformParameter::set_size(::google::protobuf::int32 value) {
   size_ = value;
 }
 
-// optional bool mirror = 4;
+// optional bool mirror = 4 [default = false];
 inline bool TransformParameter::has_mirror() const {
   return _has_bit(3);
 }
@@ -2592,7 +2592,7 @@ inline void TransformParameter::set_mirror(bool value) {
 
 // Transforms
 
-// optional int32 side_len = 1;
+// optional int32 side_len = 1 [default = 0];
 inline bool Transforms::has_side_len() const {
   return _has_bit(0);
 }

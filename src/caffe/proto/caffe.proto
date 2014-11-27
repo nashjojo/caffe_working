@@ -3,15 +3,15 @@
 package caffe;
 
 message TransformParameter{
-	optional string side=1;
-	optional string pos=2;
-	optional int32 size=3;
-	optional bool mirror=4; 
+	optional string side=1 [default = "middle"];	// Expired. the considered image position.
+	optional string pos=2 [default = "middle"];		// the cut position
+	optional int32 size=3 [default = 0];					// the actual cut size, will resize to cropsize
+	optional bool mirror=4 [default = false]; 		// whether to do mirror
 }
 
 message Transforms{
-	optional int32 side_len = 1;
-	repeated TransformParameter transformtype=2;
+	optional int32 side_len = 1 [default = 0];		// Expired. the considered image size.
+	repeated TransformParameter transformtype=2;	// can do multiply test
 }
 
 message ResolveParameter{
@@ -27,8 +27,8 @@ message BlobProto {
 	optional int32 channels = 2 [default = 0];
 	optional int32 height = 3 [default = 0];
 	optional int32 width = 4 [default = 0];
-	repeated float data = 5 [packed=true];
-	repeated float diff = 6 [packed=true];
+	repeated float data = 5 [packed = true];
+	repeated float diff = 6 [packed = true];
 }
 
 // The BlobProtoVector is simply a way to pass multiple blobproto instances
@@ -139,7 +139,7 @@ message LayerParameter {
 	// For data layers, specify if we would like to randomly crop an image.
 	optional uint32 cropsize = 20 [default = 0];
 	// For data layers, specify if we want to randomly mirror data.
-	optional bool mirror = 21 [default = false];
+	optional bool mirror = 21 [default = false]; // use only in training
 	optional uint32 meanvalue = 22;
 
 	// The standard deviation of the luminance augmentation.
@@ -164,7 +164,7 @@ message LayerParameter {
 	optional uint32 rand_skip = 53 [ default = 0 ];
 	optional string trans_type=54;
 	optional string trans_type_default=55;
-	optional string test_log=56;
+	optional string test_log=56; // expired
 	optional string data_dump=57;
 	optional string label_dump=58;
 	optional string resolve_size=59;

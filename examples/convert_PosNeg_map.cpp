@@ -33,8 +33,8 @@ using namespace caffe;
 using std::vector;
 using std::string;
 
-const int MIN_IMG_SIZE=128;
-const int MAX_IMG_SIZE=150;
+const int MIN_IMG_SIZE=160;
+const int MAX_IMG_SIZE=192;
 const int WRITE_BATCH_SIZE = 20000;
 
 int main(int argc, char** argv) {
