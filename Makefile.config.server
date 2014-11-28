@@ -1,5 +1,5 @@
 # CUDA directory contains bin/ and lib/ directories that we need.
-CUDA_DIR := /usr/local/cuda
+CUDA_DIR := /usr/local/cuda-5.5
 
 # CUDA architecture setting.
 CUDA_ARCH := -gencode arch=compute_20,code=sm_20 \
@@ -8,7 +8,7 @@ CUDA_ARCH := -gencode arch=compute_20,code=sm_20 \
     -gencode arch=compute_35,code=sm_35
 
 # MKL directory contains include/ and lib/ directions that we need.
-MKL_DIR := /data/kxmo/intel/composer_xe_2013_sp1.1.106/mkl
+MKL_DIR := /ghome/kxmo/lib/intel/composer_xe_2013_sp1.1.106/mkl
 
 # NOTE: this is required only if you will compile the matlab interface.
 # MATLAB directory should contain the mex binary in /bin
@@ -22,12 +22,15 @@ PYTHON_INCLUDES := /usr/include/python2.7 \
 PYTHON_LIB := /usr/local/lib
 
 # Whatever else you find you need goes here.
-INCLUDE_DIRS := $(PYTHON_INCLUDES) /data/kxmo/caffe/opencv-install/include/  \
-	/home/kxmo/lib/leveldb/leveldb-1.7.0/include /home/kxmo/lib/protobuf/include  \
-	/home/kxmo/lib/glog/include
-LIBRARY_DIRS := $(PYTHON_LIB)  /home/kxmo/lib/leveldb/leveldb-1.7.0  /home/kxmo/lib/protobuf/lib /usr/lib \
-	/home/kxmo/lib/glog/lib /home/kxmo/lib/snappy/lib \
-	/data/kxmo/caffe/opencv-install/lib
+INCLUDE_DIRS := $(PYTHON_INCLUDES) /ghome/kxmo/lib/opencv-install/include/  \
+	/ghome/kxmo/lib/leveldb/leveldb-1.7.0/include \
+    /ghome/kxmo/lib/protobuf/include  \
+	/ghome/kxmo/lib/glog/include
+LIBRARY_DIRS := $(PYTHON_LIB)  /ghome/kxmo/lib/leveldb/leveldb-1.7.0 \
+    /ghome/kxmo/lib/protobuf/lib /usr/lib \
+	/ghome/kxmo/lib/glog/lib \
+    /ghome/kxmo/lib/snappy/lib \
+	/ghome/kxmo/lib/opencv-install/lib
 
 # For OS X, use clang++.
 CXX := /usr/bin/g++
