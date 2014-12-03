@@ -76,6 +76,10 @@ bool ReadResizedLargeImageToDatumPosNeg(const string& filename, const float weig
 		const int short_edge, const int long_edge, DatumPosNeg* datum, const std::vector<float>& feature);
 // ~Kaixiang MO, 24th Nov, 2014
 
+// Resize img to DatumMulti
+bool ReadResizedImage(const string& filename, int short_edge, int long_edge, string* datum_string, int& rows, int& cols);
+
+bool ReadResizedImageToDatumMulti(const string& filename, int short_edge, int long_edge, DatumMulti* datum);
 }  // namespace caffe
 
 #endif   // CAFFE_UTIL_IO_H_

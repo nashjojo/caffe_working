@@ -35,6 +35,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
 		return new DataLayerWeighted<Dtype>(param);
 	} else if (type == "data_posneg") {
 		return new DataLayerPosNeg<Dtype>(param);
+	} else if (type == "data_multi") {
+		return new DataLayerMulti<Dtype>(param);
 	} else if (type == "dropout") {
 		return new DropoutLayer<Dtype>(param);
 	} else if (type == "euclidean_loss") {

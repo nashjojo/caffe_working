@@ -20,7 +20,7 @@ namespace caffe {
 template <typename Dtype>
 void SoftmaxWithLossLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 			vector<Blob<Dtype>*>* top) {
-	CHECK_EQ(bottom.size(), 4) << "SoftmaxLoss Layer takes 4 blobs as input, 3rd blob is the weight blob, 4th blob is the id.";
+	CHECK_EQ(bottom.size(), 3) << "SoftmaxLoss Layer takes 4 blobs as input, 3rd blob is the weight blob, 4th blob is the id.";
 	CHECK_EQ(top->size(), 0) << "SoftmaxLoss Layer takes no blob as output.";
 	softmax_bottom_vec_.clear();
 	softmax_bottom_vec_.push_back(bottom[0]);
@@ -81,9 +81,12 @@ Dtype SoftmaxWithLossLayerWeighted<Dtype>::Backward_cpu(const vector<Blob<Dtype>
 	// }
 	
 	for (int i = 0; i < num; ++i) {
-		//std::cout << "ins\t" << i << "\tid type " << typeid(id[i]).name() << "\tid\t" << id[i] << "\tweight\t" << weight[i] << std::endl;
+		// std::cout << "ins\t" << i << "\tlabel\t" << label[i] << "\tweight\t" << weight[i] << std::endl;
 		weight_sum += weight[i];
 			
+		// if (static_cast<int>(label[i]) >= dim || static_cast<int>(label[i]) < 0) {
+		// 	LOG(INFO) << "accessing offest " << label[i] << " while max-dimension is in [0," << dim-1 <<"]";
+		// }
 		bottom_diff[i * dim + static_cast<int>(label[i])] -= 1;
 		
 		// print the lines

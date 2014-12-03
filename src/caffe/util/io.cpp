@@ -396,4 +396,85 @@ bool ReadResizedLargeImageToDatumPosNeg(const string& filename, const float weig
 	return true;
 } // ~ Kaixiang MO, 24th Nov, 2014
 
+// Multi-Label Training
+// Kaixiang Mo, 1st Dec, 2014
+bool ReadResizedImage(const string& filename, int short_edge, int long_edge, 
+		string* datum_string, int& rows, int& cols) {
+
+	cv::Mat cv_img;
+	cv::Mat cv_img_origin;
+	int height;
+	int width;
+	cv_img_origin = cv::imread(filename, CV_LOAD_IMAGE_COLOR);
+	// CHECK_EQ(cv_img_origin.channels(), 3) << "Image need to have exactly 3 channels.";
+	if (cv_img_origin.channels() != 3) {
+		LOG(ERROR) << "Image need to have exactly 3 channels.\t" << filename;
+		return false;
+	}
+	height = cv_img_origin.size().height;
+	width = cv_img_origin.size().width;
+	// what if both edge is shorter?
+	// find the shorted edge
+	if (height<=width && height<short_edge) {
+		float ratio = (1.0*short_edge)/height;
+		height = short_edge;
+		width = int(ratio*width);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "height<width && height<short_edge";
+	} else if (width<height && width<short_edge) {
+		float ratio = (1.0*short_edge)/width;
+		width = short_edge;
+		height = int(ratio*height);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "width<height && width<short_edge";
+	} else if (height<=width && height>long_edge) {
+		float ratio = (1.0*long_edge)/height;
+		height = long_edge;
+		width = int(ratio*width);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "height<width && height>long_edge";
+	} else if (width<height && width>long_edge) {
+		float ratio = (1.0*long_edge)/width;
+		width = long_edge;
+		height = int(ratio*height);
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+		//LOG(INFO) << "width<height && width>long_edge";
+	} else { // put original image into leveldb
+		cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
+	}
+	
+	//LOG(INFO) << cv_img_origin.size().height<<"*"<<cv_img_origin.size().width <<" resizing to " << height << "*" << width;
+	if (!cv_img.data) {
+		LOG(ERROR) << "Could not open or find file " << filename;
+		return false;
+	}
+	rows = cv_img.rows;
+	cols = cv_img.cols;
+	for (int c = 0; c < 3; ++c) {
+		for (int h = 0; h < cv_img.rows; ++h) {
+			for (int w = 0; w < cv_img.cols; ++w) {
+				datum_string->push_back(static_cast<char>(cv_img.at<cv::Vec3b>(h, w)[c]));
+			}
+		}
+	}
+	return true;
+} // ~ Kaixiang MO, 24th Nov, 2014
+
+bool ReadResizedImageToDatumMulti(const string& filename, int short_edge, int long_edge, 
+		DatumMulti* datum) {
+	datum->clear_data();
+	datum->clear_float_data();
+	string* datum_string = datum->mutable_data();
+	int rows, cols;
+	if (!ReadResizedImage(filename, short_edge, long_edge, datum_string, rows, cols)) {
+		return false;
+	};
+	datum->set_channels(3);
+	datum->set_height(rows);
+	datum->set_width(cols);
+	return true;
+}
+
+// ~Multi-Label Training
+
 }  // namespace caffe

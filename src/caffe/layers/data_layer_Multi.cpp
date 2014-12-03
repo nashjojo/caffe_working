@@ -21,6 +21,7 @@
 
 // Kaixiang MO, 21 April, 2014
 #include <iostream>
+#include <fstream>
 
 //#define sideLen 32
 using namespace std;
@@ -29,23 +30,24 @@ using std::string;
 namespace caffe {
 
 template <typename Dtype>
-void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
+void* DataLayerMultiPrefetchForTest(void* layer_pointer) {
 	CHECK(layer_pointer);
-	DataLayerWeighted<Dtype>* layer = reinterpret_cast<DataLayerWeighted<Dtype>*>(layer_pointer);
+	DataLayerMulti<Dtype>* layer = reinterpret_cast<DataLayerMulti<Dtype>*>(layer_pointer);
 	CHECK(layer);
-	DatumWeighted datum;
+	DatumMulti datum;
 	CHECK(layer->prefetch_data_);
 	Dtype* top_data = layer->prefetch_data_->mutable_cpu_data();
-	Dtype* top_label = layer->prefetch_label_->mutable_cpu_data();
-	Dtype* top_weight = layer->prefetch_weight_->mutable_cpu_data();
-	Dtype* top_extfeature = layer->prefetch_extfeature_->mutable_cpu_data();
+
+	vector<shared_ptr<Blob<Dtype> > >& top_label = layer->prefetch_label_;
+	int datum_num_label_ = layer->datum_num_label_;
+	vector<shared_ptr<Blob<Dtype> > >& top_weight = layer->prefetch_weight_;
+	int datum_num_weight_ = layer->datum_num_weight_;
+
 	int* top_id = layer->prefetch_id_->mutable_cpu_data();
 	const Dtype scale = layer->layer_param_.scale();
 	int batchsize = layer->layer_param_.batchsize();
 	const int cropsize = layer->layer_param_.cropsize();
 	const bool mirror = layer->layer_param_.mirror();
-	const int num_extfeature = layer->layer_param_.num_extfeature();
-	CHECK(num_extfeature > 0) << "Number of extra feature should be larger than 0.";
 
 	if (mirror && cropsize == 0) {
 		LOG(FATAL) << "Current implementation requires mirror and cropsize to be "
@@ -53,13 +55,13 @@ void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
 	}
 	// datum scales
 	const int channels = layer->datum_channels_;
-	int height,width;
+	int height,width; // no constant width and height, desided on the fly
 	cv::Mat oriImg, cutImg;
 	int h_off, w_off; // cutting offset of image
 	int cutSize = 0;
 	int transformIdx = 0;
 
-	const int size = layer->datum_size_; // number of instance
+	const int size = layer->datum_size_; // fixed datum size
 	const Dtype* mean = layer->data_mean_.cpu_data();
 
 	Transforms types;
@@ -71,7 +73,7 @@ void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
 		LOG(FATAL)<<"Test: No transformation type file.";
 	}
 	
-	for (int itemid = 0; itemid < batchsize; itemid++){
+	for (int itemid = 0; itemid < batchsize; itemid++) {
 
 		// use new datum only if if this is the first transformtype
 		transformIdx = itemid % types.transformtype_size();
@@ -85,7 +87,6 @@ void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
 		const string& data = datum.data();
 		height = datum.height();
 		width = datum.width();
-
 
 		if (cropsize>0) {
 			const TransformParameter& transParam=types.transformtype(transformIdx);
@@ -116,9 +117,10 @@ void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
 					}
 				}
 			} // ~ Normal copy
-		} else {
+		}
+		else {
 			// we will prefer to use data() first, and then try float_data()
-			if (data.size()) {
+			if (data.size()) { // flatten the whole image into array.
 				for (int j = 0; j < size; ++j) {
 					top_data[itemid * size + j] =
 							(static_cast<Dtype>((uint8_t)data[j]) - mean[j]) * scale;
@@ -131,19 +133,16 @@ void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
 			}
 		} // ~ if(!cropsize)
 
-	// copy other fields
-	top_label[itemid]=datum.label();
-	top_weight[itemid] = datum.weight();
-	top_id[itemid] = datum.id();
-	// have to use a for loop to assign
-	// std::cout << "DataLayerWeightedPrefetchForTest" << std::endl;
-	for (int i = 0; i < num_extfeature; i++) {
-		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(i));
-		// std::cout << datum.extfeature(i) <<"\t";
-	}
-	// std::cout << std::endl;
+		// copy other fields
+		for (int i = 0; i < datum_num_label_; ++i) {
+			top_label[i]->mutable_cpu_data()[itemid] = datum.label(i);
+		}
+		for (int i = 0; i < datum_num_weight_; ++i) {
+			top_weight[i]->mutable_cpu_data()[itemid] = datum.weight(i);
+		}
+		top_id[itemid] = datum.id();
 	
-		// go to the next iter
+		// if this is the last transform, go to the next iter
 		if (transformIdx == types.transformtype_size()-1) {
 			layer->iter_->Next();
 			if (!layer->iter_->Valid()) {
@@ -152,24 +151,26 @@ void* DataLayerWeightedPrefetchForTest(void* layer_pointer) {
 				layer->iter_->SeekToFirst();
 			}
 		}
-//	LOG(INFO)<<"finish transform for itemid "<<itemid;
-	}
-
+	// LOG(INFO)<<"finish transform for itemid "<<itemid;
+	} // end for(itemid)
 	// LOG(INFO)<<"setup complete.";
 	return (void*)NULL;
 }
 
 template <typename Dtype>
-void* DataLayerWeightedPrefetch(void* layer_pointer) {
+void* DataLayerMultiPrefetch(void* layer_pointer) {
 	CHECK(layer_pointer);
-	DataLayerWeighted<Dtype>* layer = reinterpret_cast<DataLayerWeighted<Dtype>*>(layer_pointer);
+	DataLayerMulti<Dtype>* layer = reinterpret_cast<DataLayerMulti<Dtype>*>(layer_pointer);
 	CHECK(layer);
-	DatumWeighted datum;
+	DatumMulti datum;
 	CHECK(layer->prefetch_data_);
 	Dtype* top_data = layer->prefetch_data_->mutable_cpu_data();
-	Dtype* top_label = layer->prefetch_label_->mutable_cpu_data();
-	Dtype* top_weight = layer->prefetch_weight_->mutable_cpu_data();
-	Dtype* top_extfeature = layer->prefetch_extfeature_->mutable_cpu_data();
+
+	vector<shared_ptr<Blob<Dtype> > >& top_label = layer->prefetch_label_;
+	int datum_num_label_ = layer->datum_num_label_;
+	vector<shared_ptr<Blob<Dtype> > >& top_weight = layer->prefetch_weight_;
+	int datum_num_weight_ = layer->datum_num_weight_;
+
 	int* top_id = layer->prefetch_id_->mutable_cpu_data();
 	const Dtype scale = layer->layer_param_.scale();
 	const int batchsize = layer->layer_param_.batchsize();
@@ -177,8 +178,6 @@ void* DataLayerWeightedPrefetch(void* layer_pointer) {
 	const bool mirror = layer->layer_param_.mirror();
 	const float luminance_vary = layer->layer_param_.luminance_vary();
 	const float contrast_vary = layer->layer_param_.contrast_vary();
-	const int num_extfeature = layer->layer_param_.num_extfeature();
-	CHECK(num_extfeature > 0) << "Number of extra feature should be larger than 0.";
 	
 	if (mirror && cropsize == 0) {
 		LOG(FATAL) << "Current implementation requires mirror and cropsize to be "
@@ -186,7 +185,7 @@ void* DataLayerWeightedPrefetch(void* layer_pointer) {
 	}
 	// datum scales
 	const int channels = layer->datum_channels_;
-	const int size = layer->datum_size_;
+	const int size = layer->datum_size_; // fixed datum size
 	const Dtype* mean = layer->data_mean_.cpu_data();
 
 	float luminance[batchsize];
@@ -229,29 +228,20 @@ void* DataLayerWeightedPrefetch(void* layer_pointer) {
 			int resolvesize=cropsize;
 			// We only do random crop when we do training.
 			if (Caffe::phase() == Caffe::TRAIN) {
-				if(layer->layer_param_.has_resolve_size()){
+				if(layer->layer_param_.has_resolve_size()) {
 					caffe::GetOffAndResolvesize(height,width,resolves,h_off,w_off,resolvesize);
+					// LOG(INFO) << "Using resolution " << resolvesize;
 				} else {
 					h_off = rand() % (height - resolvesize + 1);
 					w_off = rand() % (width - resolvesize + 1);
 				}
-			} else {
+			} else { // Caffe will not call this, because in test phrase it do not go here.
 			 // resolvesize=cropsize;
 				h_off = (datum.height() - resolvesize) / 2;
 				w_off = (datum.width() - resolvesize) / 2;  
 			}
-			//  beforeResize=cv::Mat::zeros(resolvesize,resolvesize,CV_8UC3);
-			// for(int c=0;c<channels;++c){
-			// 	for(int h=0;h<beforeResize.rows;++h){
-			// 		for(int w=0;w<beforeResize.cols;++w){
-			// 			beforeResize.at<cv::Vec3b>(h,w)[c]=data[(c*height+h+h_off)*width+w+w_off];
-			// 		}
-			// 	}
-			// }
-			beforeResize = toMat(data, channels, height, width, resolvesize, resolvesize, h_off, w_off );
 
-			// afterResize = cv::Mat(cropsize,cropsize, CV_8UC3); 
-			// cv::resize(beforeResize,afterResize,cv::Size(cropsize,cropsize),0,0,CV_INTER_CUBIC);
+			beforeResize = toMat(data, channels, height, width, resolvesize, resolvesize, h_off, w_off );
 			resizeImage(beforeResize, afterResize, cropsize, cropsize);
 
 			if (mirror && rand() % 2) {
@@ -292,17 +282,15 @@ void* DataLayerWeightedPrefetch(void* layer_pointer) {
 				}
 			}
 		}
-	// copy other fields here
-	top_label[itemid] = datum.label();
-	top_weight[itemid] = datum.weight();
-	top_id[itemid] = datum.id();
-	// have to use a for loop to assign
-	for (int i = 0; i < num_extfeature; i++) {
-		top_extfeature[itemid * num_extfeature + i] = static_cast<Dtype>(datum.extfeature(i));
-	}
-	// check the weight here
-	//std::cout << "item " << itemid << " weight " << datum.weight() <<" id " << datum.id() << std::endl;
-	
+		// copy other fields here
+		for (int i = 0; i < datum_num_label_; ++i) {
+			top_label[i]->mutable_cpu_data()[itemid] = datum.label(i);
+		}
+		for (int i = 0; i < datum_num_weight_; ++i) {
+			top_weight[i]->mutable_cpu_data()[itemid] = datum.weight(i);
+		}
+		top_id[itemid] = datum.id();
+
 		// go to the next iter
 		layer->iter_->Next();
 		if (!layer->iter_->Valid()) {
@@ -316,18 +304,19 @@ void* DataLayerWeightedPrefetch(void* layer_pointer) {
 }
 
 template <typename Dtype>
-DataLayerWeighted<Dtype>::~DataLayerWeighted<Dtype>() {
+DataLayerMulti<Dtype>::~DataLayerMulti<Dtype>() {
 	// Finally, join the thread
 	CHECK(!pthread_join(thread_, NULL)) << "Pthread joining failed.";
 }
 
 template <typename Dtype>
-void DataLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
+void DataLayerMulti<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 			vector<Blob<Dtype>*>* top) {
-	LOG(INFO)<<"DataLayerWeighted::SetUp running";
+	LOG(INFO)<<"DataLayerMulti::SetUp running";
 	CHECK_EQ(bottom.size(), 0) << "Data Layer takes no input blobs.";
 	// 3rd is weight blob, 4rd is id blob, 5th blob is extra feature.
-	CHECK_EQ(top->size(), 5) << "Data Layer takes 5 blobs as output, the 3rd blob is instance weight, 4rd is instance id and 5th is extra features";
+	CHECK_GE(top->size(), 4) << "Data Layer takes more than 4 blobs as output, 1:img, 2:label, 3:weight, 4:instance-id";
+	int top_id = 0;
 	// Initialize the leveldb
 	leveldb::DB* db_temp;
 	leveldb::Options options;
@@ -339,13 +328,13 @@ void DataLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 	CHECK(status.ok()) << "Failed to open leveldb "
 			<< this->layer_param_.source() << std::endl << status.ToString();
 	db_.reset(db_temp);
-	leveldb::Iterator* itr;
+	//leveldb::Iterator* itr;
 	iter_.reset(db_->NewIterator(leveldb::ReadOptions()));
 	iter_->SeekToFirst();
 	LOG(INFO)<<"seek first complete";
 	// Check if we would need to randomly skip a few data points
 	if (this->layer_param_.rand_skip()) {
-		unsigned int skip = rand() % this->layer_param_.rand_skip();
+		unsigned int skip = rand() % this->layer_param_.rand_skip(); // good
 		LOG(INFO) << "Skipping first " << skip << " data points.";
 		while (skip-- > 0) {
 			iter_->Next();
@@ -355,10 +344,11 @@ void DataLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 		}
 	}
 	// Read a data point, and use it to initialize the top blob.
-	DatumWeighted datum;
+	DatumMulti datum;
 	datum.ParseFromString(iter_->value().ToString());
+
 	// image
-	// LOG(INFO)<<"parse first complete";
+	// LOG(INFO)<<"parse first complete, height " << datum.height() << " width " << datum.width();
 	int cropsize = this->layer_param_.cropsize();
 	Transforms types;
 	int delta=1;
@@ -367,11 +357,11 @@ void DataLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 		if (this->layer_param_.has_trans_type()) {
 			ReadProtoFromTextFile(this->layer_param_.trans_type(),&types);
 			delta*=types.transformtype_size();
+			LOG(INFO) << "Each image will be transformed " << delta << " times";
 		} else {
 			LOG(FATAL)<<"Test: No transformation type file.";
 		}
 	}
-
 
 	if (cropsize > 0) {
 		(*top)[0]->Reshape(
@@ -389,33 +379,51 @@ void DataLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 	LOG(INFO) << "output data size: " << (*top)[0]->num() << ","
 			<< (*top)[0]->channels() << "," << (*top)[0]->height() << ","
 			<< (*top)[0]->width();
+	top_id ++;
+	
 	// label
-	(*top)[1]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
-	prefetch_label_.reset(
+	// (*top)[1]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
+	// prefetch_label_.reset(
+	// 		new Blob<Dtype>(this->layer_param_.batchsize()*delta, 1, 1, 1));
+
+	datum_num_label_ = datum.label_size();
+	// LOG(INFO) << "Setup: datum_num_label_ " << datum_num_label_;
+	prefetch_label_.resize(datum_num_label_);
+	for (int i = 0; i < datum_num_label_; ++i) {
+		(*top)[top_id + i]->Reshape(
+			this->layer_param_.batchsize()*delta, 1, 1, 1);
+		// LOG(INFO) << "reseting prefetch_label_[top_id + i] " << top_id + i;
+		prefetch_label_[i].reset(
 			new Blob<Dtype>(this->layer_param_.batchsize()*delta, 1, 1, 1));
-	// weight
-	(*top)[2]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
-	prefetch_weight_.reset(
+	}
+	top_id = top_id + datum_num_label_;
+
+	datum_num_weight_ = datum.weight_size();
+	// LOG(INFO) << "Setup: datum_num_weight_ " << datum_num_weight_;
+	prefetch_weight_.resize(datum_num_weight_);
+	for (int i = 0; i < datum_num_weight_; ++i) {
+		(*top)[top_id + i]->Reshape(
+			this->layer_param_.batchsize()*delta, 1, 1, 1);
+		// LOG(INFO) << "reseting prefetch_weight_[top_id + i] " << top_id + i;
+		prefetch_weight_[i].reset(
 			new Blob<Dtype>(this->layer_param_.batchsize()*delta, 1, 1, 1));
+	}
+	top_id = top_id + datum_num_weight_;
+	CHECK_EQ(top->size(), 4+datum_num_label_+datum_num_weight_-2) << "DataLayerMulti::SetUp needs " 
+		<<4+datum_num_label_+datum_num_weight_-2<< "output blobs but gets " << top->size() << " blobs";
+
 	// id
-	(*top)[3]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
+	(*top)[top_id]->Reshape(this->layer_param_.batchsize()*delta, 1, 1, 1);
 	prefetch_id_.reset(
 			new Blob<int>(this->layer_param_.batchsize()*delta, 1, 1, 1));
-
-	const int num_extfeature = this->layer_param_.num_extfeature();
-	CHECK(num_extfeature > 0) << "Number of extra feature should be larger than 0.";
-	// external features
-	(*top)[4]->Reshape(
-			this->layer_param_.batchsize()*delta, num_extfeature, 1, 1);
-	prefetch_extfeature_.reset(new Blob<Dtype>(
-			this->layer_param_.batchsize()*delta, num_extfeature, 1, 1));
-		
+	top_id ++;
+	
 	// datum size
 	datum_channels_ = datum.channels();
 	datum_height_ = datum.height();
 	datum_width_ = datum.width();
 	datum_size_ = datum.channels() * datum.height() * datum.width();
-	
+
 	CHECK_GT(datum_height_, cropsize);
 	CHECK_GT(datum_width_, cropsize);
 	// check if we want to have mean
@@ -447,85 +455,230 @@ void DataLayerWeighted<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 	// simultaneous cudaMalloc calls when the main thread is running. In some
 	// GPUs this seems to cause failures if we do not so.
 	prefetch_data_->mutable_cpu_data();
-	prefetch_label_->mutable_cpu_data();
-	prefetch_weight_->mutable_cpu_data();
+	for (int i = 0; i < datum_num_label_; ++i) {
+		prefetch_label_[i]->mutable_cpu_data();
+	}
+	for (int i = 0; i < datum_num_weight_; ++i) {
+		prefetch_weight_[i]->mutable_cpu_data();
+	}
 	prefetch_id_->mutable_cpu_data();
-	data_mean_.cpu_data();
+	data_mean_.mutable_cpu_data();
 	DLOG(INFO) << "Initializing prefetch";
 	if(Caffe::phase()==Caffe::TEST){
-		CHECK(!pthread_create(&thread_,NULL,DataLayerWeightedPrefetchForTest<Dtype>, reinterpret_cast<void*>(this))) << "Pthread execution failed.";
+		CHECK(!pthread_create(&thread_,NULL,DataLayerMultiPrefetchForTest<Dtype>, reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 	} else {
-		CHECK(!pthread_create(&thread_, NULL, DataLayerWeightedPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
+		CHECK(!pthread_create(&thread_, NULL, DataLayerMultiPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 	}
 	DLOG(INFO) << "Prefetch initialized.";
 }
 
 template <typename Dtype>
-void DataLayerWeighted<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void DataLayerMulti<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 			vector<Blob<Dtype>*>* top) {
 	// First, join the thread
 	CHECK(!pthread_join(thread_, NULL)) << "Pthread joining failed.";
+	int top_id = 0;
 	// Copy the data
 	memcpy((*top)[0]->mutable_cpu_data(), prefetch_data_->cpu_data(),
 			sizeof(Dtype) * prefetch_data_->count());
-	memcpy((*top)[1]->mutable_cpu_data(), prefetch_label_->cpu_data(),
-			sizeof(Dtype) * prefetch_label_->count());
-	memcpy((*top)[2]->mutable_cpu_data(), prefetch_weight_->cpu_data(),
-			sizeof(Dtype) * prefetch_weight_->count());
-	memcpy((*top)[3]->mutable_cpu_data(), prefetch_id_->cpu_data(),
+	top_id ++;
+
+	for (int i = 0; i < datum_num_label_; ++i) {
+		memcpy((*top)[top_id + i]->mutable_cpu_data(), prefetch_label_[i]->cpu_data(),
+			sizeof(Dtype) * prefetch_label_[i]->count());
+	}
+	top_id += datum_num_label_;
+
+	for (int i = 0; i < datum_num_weight_; ++i) {
+		memcpy((*top)[top_id + i]->mutable_cpu_data(), prefetch_weight_[i]->cpu_data(),
+			sizeof(Dtype) * prefetch_weight_[i]->count());
+	}
+	top_id += datum_num_weight_;
+
+	memcpy((*top)[top_id]->mutable_cpu_data(), prefetch_id_->cpu_data(),
 			sizeof(int) * prefetch_id_->count());
-	memcpy((*top)[4]->mutable_cpu_data(), prefetch_extfeature_->cpu_data(),
-			sizeof(Dtype) * prefetch_extfeature_->count());
+	top_id += 1;
+
 	LOG(INFO)<<"data layer forward finished.";
 	// Start a new prefetch thread
 	if(Caffe::phase()==Caffe::TEST)
-	CHECK(!pthread_create(&thread_, NULL, DataLayerWeightedPrefetchForTest<Dtype>, reinterpret_cast<void*>(this))) << "Pthread execution failed.";
+	CHECK(!pthread_create(&thread_, NULL, DataLayerMultiPrefetchForTest<Dtype>, reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 	else
-		CHECK(!pthread_create(&thread_, NULL, DataLayerWeightedPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
+		CHECK(!pthread_create(&thread_, NULL, DataLayerMultiPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 }
 
 template <typename Dtype>
-void DataLayerWeighted<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+void DataLayerMulti<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 			vector<Blob<Dtype>*>* top) {
-	// LOG(INFO)<<"DataLayerWeighted::Forward_gpu running";
+	// LOG(INFO)<<"DataLayerMulti::Forward_gpu running";
 	// First, join the thread
 	CHECK(!pthread_join(thread_, NULL)) << "Pthread joining failed.";
+	int top_id = 0;
 	// Copy the data
 	CUDA_CHECK(cudaMemcpy((*top)[0]->mutable_gpu_data(),
 			prefetch_data_->cpu_data(), sizeof(Dtype) * prefetch_data_->count(),
 			cudaMemcpyHostToDevice));
-	CUDA_CHECK(cudaMemcpy((*top)[1]->mutable_gpu_data(),
-			prefetch_label_->cpu_data(), sizeof(Dtype) * prefetch_label_->count(),
+	top_id ++;
+
+	for (int i = 0; i < datum_num_label_; ++i) {
+		CUDA_CHECK(cudaMemcpy((*top)[top_id + i]->mutable_gpu_data(),
+			prefetch_label_[i]->cpu_data(), sizeof(Dtype) * prefetch_label_[i]->count(),
 			cudaMemcpyHostToDevice));
-	CUDA_CHECK(cudaMemcpy((*top)[2]->mutable_gpu_data(),
-			prefetch_weight_->cpu_data(), sizeof(Dtype) * prefetch_weight_->count(),
+	}
+	top_id += datum_num_label_;
+
+	for (int i = 0; i < datum_num_weight_; ++i) {
+		CUDA_CHECK(cudaMemcpy((*top)[top_id + i]->mutable_gpu_data(),
+			prefetch_weight_[i]->cpu_data(), sizeof(Dtype) * prefetch_weight_[i]->count(),
 			cudaMemcpyHostToDevice));
-	CUDA_CHECK(cudaMemcpy((*top)[3]->mutable_gpu_data(),
+	}
+	top_id += datum_num_weight_;
+
+	CUDA_CHECK(cudaMemcpy((*top)[top_id]->mutable_gpu_data(),
 			prefetch_id_->cpu_data(), sizeof(int) * prefetch_id_->count(),
 			cudaMemcpyHostToDevice));
-	CUDA_CHECK(cudaMemcpy((*top)[4]->mutable_gpu_data(),
-			prefetch_extfeature_->cpu_data(), sizeof(Dtype) * prefetch_extfeature_->count(),
-			cudaMemcpyHostToDevice));
+	top_id ++;
+
 	// Start a new prefetch thread
 	if(Caffe::phase()==Caffe::TEST)
-		CHECK(!pthread_create(&thread_, NULL, DataLayerWeightedPrefetchForTest<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
+		CHECK(!pthread_create(&thread_, NULL, DataLayerMultiPrefetchForTest<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 	else 
-		CHECK(!pthread_create(&thread_, NULL, DataLayerWeightedPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
+		CHECK(!pthread_create(&thread_, NULL, DataLayerMultiPrefetch<Dtype>,reinterpret_cast<void*>(this))) << "Pthread execution failed.";
 }
 
-// The backward operations are dummy - they do not carry any computation.
+
+// Save propogate down gradient w.r.t top data.
+// The backward operations were dummy - they do not carry any computation.
 template <typename Dtype>
-Dtype DataLayerWeighted<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+Dtype DataLayerMulti<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 			const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
+	// CHECK(Caffe::phase()==Caffe::TEST) << "Calling DataLayerMulti.Backward_cpu in TRAIN";
+
+	const Dtype* top_diff = top[0]->cpu_diff();
+	const Dtype* top_data = top[0]->cpu_data();
+	const int* id = reinterpret_cast<const int*>(top[3]->cpu_data());
+
+	const Dtype scale = this->layer_param_.scale();
+	const int cropsize = this->layer_param_.cropsize();
+	//int mean = this->layer_param_.meanvalue();
+	const Dtype* mean = this->data_mean_.cpu_data();
+	// Dtype covar_factor = this->layer_param_.covar_factor();
+	int channels = this->datum_channels_;
+	string dump_path = this->layer_param_.data_dump();
+	int num = top[0]->num();
+	int dim = top[0]->count() / num;
+	
+	char filename[256];
+	int img_offset = 0;
+	int channel_offset = 0;
+	Dtype value_in = 0;
+	uint8_t value_out = 0;
+	Dtype max_val = 0;
+
+	// for Caffe::Test transformed type
+	int transformIdx = 0;
+	int batchsize = this->layer_param_.batchsize();
+	Transforms types;
+	if (Caffe::phase()==Caffe::TEST) {
+		if (this->layer_param_.has_trans_type()) {
+			ReadProtoFromTextFile(this->layer_param_.trans_type(),&types);
+			batchsize *= types.transformtype_size();
+			LOG(INFO) << "Each image will be processed " << types.transformtype_size() << " times.";
+		} else {
+			LOG(FATAL) << "Test: No transformation type file.";
+		}
+		CHECK_EQ(num, batchsize) << "Test batch size do not match";
+	}
+
+	for (int itemid = 0; itemid < num; ++itemid ) {
+		// data_diff -> image
+		if (Caffe::phase()==Caffe::TEST) {
+			transformIdx = itemid % types.transformtype_size();
+		}
+
+		// Visual Saliency map in color
+		// cv::Mat cv_img = cv::Mat::zeros(cropsize,cropsize, CV_8UC3);
+		// for (int c = 0; c < channels; ++c) {
+		// 	for (int h = 0; h < cropsize; ++h) {
+		// 		for (int w = 0; w < cropsize; ++w) {
+		// 			img_offset = itemid*channels*cropsize*cropsize;
+		// 			channel_offset = c*cropsize*cropsize;
+
+		// 			value_in = top_diff[img_offset + channel_offset + h*cropsize + w ] / covar_factor;
+		// 			value_out	= static_cast<uint8_t>( value_in*1.0 / scale + mean[channel_offset + h*cropsize + w] );
+		// 			cv_img.at<cv::Vec3b>(h,w)[c] = value_out;
+		// 			// if(value_in > 0) {
+		// 			// 	LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
+		// 			// }
+		// 		}
+		// 	}
+		// }
+		// // save image files
+		// sprintf( filename, "%s/saliency/%d.png", dump_path.c_str(), itemid );
+		// // sprintf( filename, "%s/saliency/%d_%d.png", dump_path.c_str(), id[itemid], transformIdx );
+		// cv::imwrite( filename, cv_img );
+
+		std::ofstream outfile;
+		// sprintf( filename, "%s/saliency/%d.txt", dump_path.c_str(), itemid );
+		sprintf( filename, "%s/saliency/%d_%d.txt", dump_path.c_str(), id[itemid], transformIdx );
+		outfile.open(filename);
+		for (int h = 0; h < cropsize; ++h) {
+			for (int w = 0; w < cropsize; ++w) {
+				max_val = 0;
+				for (int c = 0; c < channels; ++c) {
+					img_offset = itemid*channels*cropsize*cropsize;
+					channel_offset = c*cropsize*cropsize;
+					value_in = top_diff[img_offset + channel_offset + h*cropsize + w ] / scale;
+					if (abs(value_in) > max_val) {
+						max_val = abs(value_in);
+					}
+					// if(value_in > 0) {
+					// 	LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
+					// }
+				}
+				outfile << max_val << "\t";
+			}
+			outfile << std::endl;
+		}
+		// save image files
+		outfile.close();
+
+
+		// data_diff -> image
+		cv::Mat original_img = cv::Mat::zeros(cropsize,cropsize, CV_8UC3);
+		for (int c = 0; c < channels; ++c) {
+			for (int h = 0; h < cropsize; ++h) {
+				for (int w = 0; w < cropsize; ++w) {
+					img_offset = itemid*channels*cropsize*cropsize;
+					channel_offset = c*cropsize*cropsize;
+
+					value_in = top_data[img_offset + channel_offset + h*cropsize + w ];
+					value_out	= static_cast<uint8_t>( value_in*1.0 / scale + mean[channel_offset + h*cropsize + w] );
+					original_img.at<cv::Vec3b>(h,w)[c] = value_out;
+					//if(value_in > 0) {
+						//LOG(INFO)<<"itemid "<<itemid <<" channel:"<<c <<" height:"<<h <<" width:"<<w <<" value_in:"<<value_in <<" value_out:"<<value_out;
+					//}
+				}
+			}
+		}
+		// save image files
+		// sprintf( filename, "%s/original/%d.png", dump_path.c_str(), itemid );
+		sprintf( filename, "%s/original/%d_%d.png", dump_path.c_str(), id[itemid], transformIdx );
+		cv::imwrite( filename, original_img );
+
+	}
+
 	return Dtype(0.);
 }
 
 template <typename Dtype>
-Dtype DataLayerWeighted<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+Dtype DataLayerMulti<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 			const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
-	return Dtype(0.);
+	// using cpu version
+	return Backward_cpu(top, propagate_down, bottom);
+	//return Dtype(0.);
 }
 
-INSTANTIATE_CLASS(DataLayerWeighted);
+INSTANTIATE_CLASS(DataLayerMulti);
 
 }  // namespace caffe

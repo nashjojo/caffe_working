@@ -17,6 +17,8 @@
 #include "caffe/util/io.hpp"
 #include "caffe/vision_layers.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/util/image_transform.hpp"
+
 //#define sideLen 32
 using namespace std;
 using std::string;
@@ -111,98 +113,71 @@ void* DataLayerPrefetchForTest(void* layer_pointer) {
 		LOG(FATAL) << "Current implementation requires mirror and cropsize to be "
 				<< "set at the same time.";
 	}
-	ofstream out;
-	if(layer->layer_param_.has_test_log()){
-		out.open(layer->layer_param_.test_log().c_str(),ios::out|ios::app);
-	}
+
 	// datum scales
 	const int channels = layer->datum_channels_;
-	//const int height = layer->datum_height_;
-	//const int width = layer->datum_width_;
+	int height,width; // no constant width and height, desided on the fly
+	cv::Mat oriImg, cutImg;
+	int h_off, w_off; // cutting offset of image
+	int cutSize = 0;
+	int transformIdx = 0;
+
 	const int size = layer->datum_size_;
 	const Dtype* mean = layer->data_mean_.cpu_data();
+
 	Transforms types;
 	if(layer->layer_param_.has_trans_type()){
 		ReadProtoFromTextFile(layer->layer_param_.trans_type(),&types);
 		batchsize*=types.transformtype_size();
-	 // LOG(INFO)<<"batchsize="<<batchsize;
-	} else if(layer->layer_param_.has_trans_type_default()){
-		ReadProtoFromTextFile(layer->layer_param_.trans_type_default(),&types);
+		LOG(INFO)<<"Each image will be processed "<< types.transformtype_size() << " times.";
 	} else {
-		LOG(FATAL)<<"No transformation type file.";
+		LOG(FATAL)<<"Test: No transformation type file.";
 	}
-	int sideLen=types.side_len();
-	int height,width;
 	
 	for (int itemid = 0; itemid < batchsize; itemid++){
-		// get a blob
-		if(itemid%types.transformtype_size()==0){
+
+		// use new datum only if if this is the first transformtype
+		transformIdx = itemid % types.transformtype_size();
+		if (transformIdx == 0) {
 			CHECK(layer->iter_);
 			CHECK(layer->iter_->Valid());
 			datum.ParseFromString(layer->iter_->value().ToString());
+			// read a datum if it have done all transformtype.
 		}
 
-//    LOG(INFO)<<"itemid="<<itemid;
 		const string& data = datum.data();
 		height = datum.height();
 		width = datum.width();
-		if (cropsize) {
+
+		if (cropsize>0) {
+			const TransformParameter& transParam=types.transformtype(transformIdx);
 			CHECK(data.size()) << "Image cropping only support uint8 data";
-			int h_off, w_off;
-			const TransformParameter& transParam=types.transformtype(
-				itemid%types.transformtype_size());
-			int t_size=transParam.size();
-			string t_pos=transParam.pos(),t_side=transParam.side();
-			bool t_mirror=transParam.mirror();
-			cv::Mat beforeTrans=cv::Mat::zeros(height,width,CV_8UC3);
-			cv::Mat afterCut,afterCrop,afterMirror,afterResize;
-			for(int c=0;c<channels;++c){
-				for(int h=0;h<beforeTrans.rows;++h){
-					for(int w=0;w<beforeTrans.cols;++w){
-						beforeTrans.at<cv::Vec3b>(h,w)[c]=data[(c*height+h)*width+w];
-					}
-				}
-			}
-	//    LOG(INFO)<<"before cut right.";
-			afterCut=cv::Mat(cv::Size(sideLen,sideLen),CV_8UC3);
-	 //   LOG(INFO)<<"after cur right.";
-			caffe::GetWidthAndHeightOff(true, t_side, height, width, sideLen, h_off, w_off);
-		//  LOG(INFO)<<"get off right.";
-			cv::Rect myROI(w_off,h_off, sideLen, sideLen);
-		//  LOG(INFO)<<"myroi right.";
-			afterCut=beforeTrans(myROI);
-		 // LOG(INFO)<<"after cur myroi right.";
-			afterCrop=cv::Mat(cv::Size(t_size,t_size),CV_8UC3);
-		 // LOG(INFO)<<"after crop right.";
-			if(t_size<sideLen){
-				caffe::GetWidthAndHeightOff(false, t_pos, sideLen, sideLen, t_size, h_off, w_off);
-			 // LOG(INFO)<<sideLen<<" "<<w_off<<" "<<h_off<<" "<<t_size;
-				afterCrop=afterCut(cv::Rect(w_off,h_off,t_size,t_size));
+			cutSize = transParam.size();
+			if (cutSize) {
+				//LOG(INFO) << "cutting " <<cutSize<<"*"<<cutSize << " then resizing to " <<cropsize<<"*"<<cropsize;
+				getPositioinOffset(transParam.pos(), height, width, cutSize, cutSize, h_off, w_off);
+				oriImg = toMat(data, channels, height, width, cutSize, cutSize, h_off, w_off );
+				resizeImage(oriImg, cutImg, cropsize, cropsize);
+				oriImg = cutImg;
 			} else {
-				afterCrop=afterCut.clone();
+				getPositioinOffset(transParam.pos(), height, width, cropsize, cropsize, h_off, w_off);
+				oriImg = toMat(data, channels, height, width, cropsize, cropsize, h_off, w_off );
 			}
-			afterMirror=cv::Mat(t_size,t_size,CV_8UC3);
-			if(t_mirror){
-				cv::flip(afterCrop,afterMirror,0);
-			} else {
-				afterMirror=afterCrop.clone();
+			if (transParam.mirror()) { // this is test, no random
+				flipImage(oriImg, cutImg);
+				oriImg = cutImg;
 			}
-			afterResize = cv::Mat(cropsize,cropsize, CV_8UC3);  
-			cv::resize(afterMirror,afterResize,cv::Size(cropsize,cropsize),0,0,CV_INTER_CUBIC);
+			// Do we need to resize for multi-resolution testing? // No first
 			// Normal copy
 			for (int c = 0; c < channels; ++c) {
 				for (int h = 0; h < cropsize; ++h) {
 					for (int w = 0; w < cropsize; ++w) {
 						top_data[((itemid * channels + c) * cropsize + h) * cropsize + w]
-								= (static_cast<Dtype>((uint8_t)afterResize.at<cv::Vec3b>(h,w)[c])
+								= (static_cast<Dtype>((uint8_t)oriImg.at<cv::Vec3b>(h,w)[c])
 									- mean[(c * cropsize + h ) * cropsize + w]) * scale;
 					}
 				}
-			}
-			top_label[itemid]=datum.label();
-			if(layer->layer_param_.has_test_log()){
-					out<<itemid<<" "<<top_label[itemid]<<endl;
-			}
+			} // ~ Normal copy
 		} else {
 			// we will prefer to use data() first, and then try float_data()
 			if (data.size()) {
@@ -216,10 +191,12 @@ void* DataLayerPrefetchForTest(void* layer_pointer) {
 							(datum.float_data(j) - mean[j]) * scale;
 				}
 			}
-			top_label[itemid]=datum.label();
-		}
-		// go to the next iter
-		if(itemid%types.transformtype_size()+1==types.transformtype_size()){
+		} // ~ if(!cropsize)
+
+		top_label[itemid]=datum.label();
+
+		// if this is the last transform, go to the next iter
+		if (transformIdx == types.transformtype_size()-1) {
 			layer->iter_->Next();
 			if (!layer->iter_->Valid()) {
 				// We have reached the end. Restart from the first.
@@ -227,13 +204,9 @@ void* DataLayerPrefetchForTest(void* layer_pointer) {
 				layer->iter_->SeekToFirst();
 			}
 		}
-//	LOG(INFO)<<"finish transform for itemid "<<itemid;
-	}
-
-	if(layer->layer_param_.has_test_log()){
-		out.close();
-	}
-	LOG(INFO)<<"setup complete.";
+	// LOG(INFO)<<"finish transform for itemid "<<itemid;
+	} // end for(itemid)
+	// LOG(INFO)<<"setup complete.";
 	return (void*)NULL;
 }
 
@@ -312,16 +285,21 @@ void* DataLayerPrefetch(void* layer_pointer) {
 				h_off = (datum.height() - resolvesize) / 2;
 				w_off = (datum.width() - resolvesize) / 2;  
 			}
-			beforeResize=cv::Mat::zeros(resolvesize,resolvesize,CV_8UC3);
-			for(int c=0;c<channels;++c){
-				for(int h=0;h<beforeResize.rows;++h){
-					for(int w=0;w<beforeResize.cols;++w){
-						beforeResize.at<cv::Vec3b>(h,w)[c]=data[(c*height+h+h_off)*width+w+w_off];
-					}
-				}
-			}
-			afterResize = cv::Mat(cropsize,cropsize, CV_8UC3); 
-			cv::resize(beforeResize,afterResize,cv::Size(cropsize,cropsize),0,0,CV_INTER_CUBIC);
+
+			// beforeResize=cv::Mat::zeros(resolvesize,resolvesize,CV_8UC3);
+			// for(int c=0;c<channels;++c){
+			// 	for(int h=0;h<beforeResize.rows;++h){
+			// 		for(int w=0;w<beforeResize.cols;++w){
+			// 			beforeResize.at<cv::Vec3b>(h,w)[c]=data[(c*height+h+h_off)*width+w+w_off];
+			// 		}
+			// 	}
+			// }
+			beforeResize = toMat(data, channels, height, width, resolvesize, resolvesize, h_off, w_off );
+
+			// afterResize = cv::Mat(cropsize,cropsize, CV_8UC3); 
+			// cv::resize(beforeResize,afterResize,cv::Size(cropsize,cropsize),0,0,CV_INTER_CUBIC);
+			resizeImage(beforeResize, afterResize, cropsize, cropsize);
+
 			if (mirror && rand() % 2) {
 				// Copy mirrored version
 				for (int c = 0; c < channels; ++c) {
@@ -414,14 +392,21 @@ void DataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 	Datum datum;
 	datum.ParseFromString(iter_->value().ToString());
 	// image
-	LOG(INFO)<<"parse first complete";
+	// LOG(INFO)<<"parse first complete";
 	int cropsize = this->layer_param_.cropsize();
 	Transforms types;
 	int delta=1;
-	if(this->layer_param_.has_trans_type()){
-		ReadProtoFromTextFile(this->layer_param_.trans_type(),&types);
-		delta*=types.transformtype_size();
+
+	if (Caffe::phase() == Caffe::TEST) {
+		if(this->layer_param_.has_trans_type()){
+			ReadProtoFromTextFile(this->layer_param_.trans_type(),&types);
+			delta*=types.transformtype_size();
+			LOG(INFO) << "Each image will be transformed " << delta << " times";
+		} else {
+			LOG(FATAL)<<"Test: No transformation type file.";
+		}
 	}
+
 	if (cropsize > 0) {
 		(*top)[0]->Reshape(
 				this->layer_param_.batchsize()*delta, datum.channels(), cropsize, cropsize);

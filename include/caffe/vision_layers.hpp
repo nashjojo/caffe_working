@@ -519,7 +519,7 @@ class DataLayerWeighted : public Layer<Dtype> {
 	shared_ptr<Blob<Dtype> > prefetch_label_;
 	// instance weight
 	shared_ptr<Blob<Dtype> > prefetch_weight_;
-	// instance id, Dtype or use int32? precision enough?? 
+	// instance id, int32 for precision
 	shared_ptr<Blob<int> > prefetch_id_;
 	// instance existing feature
 	shared_ptr<Blob<Dtype> > prefetch_extfeature_;
@@ -573,13 +573,68 @@ class DataLayerPosNeg : public Layer<Dtype> {
 	shared_ptr<Blob<Dtype> > prefetch_weight_;
 	// instance negative weight, #impression
 	shared_ptr<Blob<Dtype> > prefetch_neg_weight_;
-	// instance id, Dtype or use int32? precision enough?? 
+	// instance id, int32 for precision
 	shared_ptr<Blob<int> > prefetch_id_;
 	// instance existing feature
 	shared_ptr<Blob<Dtype> > prefetch_extfeature_;
 	Blob<Dtype> data_mean_;
 };
 // ~Kaixiang Mo, 27th June, 2014
+
+// Multi-label training, 1st Dec, 2014
+template <typename Dtype>
+void* DataLayerMultiPrefetch(void* layer_pointer);
+
+template <typename Dtype>
+void* DataLayerMultiPrefetchForTest(void* layer_pointer);
+
+template <typename Dtype>
+class DataLayerMulti : public Layer<Dtype> {
+	// The function used to perform prefetching.
+	friend void* DataLayerMultiPrefetch<Dtype>(void* layer_pointer);
+	friend void* DataLayerMultiPrefetchForTest<Dtype>(void* layer_pointer);
+
+ public:
+	explicit DataLayerMulti(const LayerParameter& param)
+			: Layer<Dtype>(param) {}
+	virtual ~DataLayerMulti();
+	virtual void SetUp(const vector<Blob<Dtype>*>& bottom,
+			vector<Blob<Dtype>*>* top);
+
+ protected:
+	virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+			vector<Blob<Dtype>*>* top);
+	virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+			vector<Blob<Dtype>*>* top);
+	virtual Dtype Backward_cpu(const vector<Blob<Dtype>*>& top,
+			const bool propagate_down, vector<Blob<Dtype>*>* bottom);
+	virtual Dtype Backward_gpu(const vector<Blob<Dtype>*>& top,
+			const bool propagate_down, vector<Blob<Dtype>*>* bottom);
+
+	shared_ptr<leveldb::DB> db_;
+	shared_ptr<leveldb::Iterator> iter_;
+	int datum_channels_;
+	int datum_height_;
+	int datum_width_;
+	int datum_size_;
+	int datum_num_label_;
+	int datum_num_weight_;
+	
+	pthread_t thread_;
+	shared_ptr<Blob<Dtype> > prefetch_data_;
+	// shared_ptr<Blob<Dtype> > prefetch_label_;
+	vector<shared_ptr<Blob<Dtype> > > prefetch_label_;
+	// instance positive weight, #click
+	// shared_ptr<Blob<Dtype> > prefetch_weight_;
+	vector<shared_ptr<Blob<Dtype> > > prefetch_weight_;
+	// instance negative weight, #impression
+	// shared_ptr<Blob<Dtype> > prefetch_neg_weight_;
+
+	// instance id, int32 for precision, can use only on cpu memory
+	shared_ptr<Blob<int> > prefetch_id_;
+	Blob<Dtype> data_mean_;
+};
+// ~Multi-label training 
 
 template <typename Dtype>
 class SoftmaxLayer : public Layer<Dtype> {

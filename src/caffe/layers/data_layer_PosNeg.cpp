@@ -17,7 +17,7 @@
 #include "caffe/util/io.hpp"
 #include "caffe/vision_layers.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/util/image_transform.hpp" // added by kaixiang
+#include "caffe/util/image_transform.hpp"
 
 // Kaixiang MO, 21 April, 2014
 #include <iostream>

@@ -72,7 +72,7 @@ Dtype SoftmaxWithLossLayerPosNeg<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>
 	memcpy(bottom_diff, prob_data, sizeof(Dtype) * prob_.count());
 	memcpy(neg_diff, prob_data, sizeof(Dtype) * prob_.count());
 
-	const Dtype* label = (*bottom)[1]->cpu_data();
+	// const Dtype* label = (*bottom)[1]->cpu_data();
 	const Dtype* weight = (*bottom)[2]->cpu_data();
 	const Dtype* neg_weight = (*bottom)[4]->cpu_data();
 	const int* id = reinterpret_cast<const int*>((*bottom)[3]->cpu_data()); // Kaixiang MO, 25th April, 2014
